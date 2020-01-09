@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ oem.oemname }}管理系统 | 后台管理</title>
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
+
+    <link href="/static/css/animate.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+
+    <div class="middle-box text-center loginscreen animated fadeInDown">
+        <div>
+            <h3>欢迎登陆{{ oem.oemname }}后台页面</h3>
+                <div>
+                    <botton name="mode" class="btn btn-success block full-width m-b manager">重置admin密码</botton>
+                    <botton name="mode" class="btn btn-primary block full-width m-b manager">初始化ORM</botton>
+                    <botton name="mode" class="btn btn-default block full-width m-b manager">清除所有ORM</botton>
+                </div>
+                <hr>
+                <div>
+{#                    <botton name="mode" class="btn btn-warning block full-width m-b manager">清除主机日志</botton>#}
+{#                    <botton name="mode" class="btn btn-danger block full-width m-b manager">清除系统日志</botton>#}
+{#                    <botton name="mode" class="btn btn-secondary block full-width m-b manager">清除操作日志</botton>#}
+                </div>
+            <p class="m-t"> <strong>{{ oem.oemname }}</strong> 版权所有 &copy; 2018-2019 </p>
+        </div>
+    </div>
+
+    <!-- Mainly scripts -->
+    <script src="/static/js/jquery-3.1.1.min.js"></script>
+    <script src="/static/js/popper.min.js"></script>
+    <script src="/static/js/bootstrap.js"></script>
+    <script src="/static/js/jquery.cookie.min.js"></script>
+    <script>
+    $(function () {
+        $('.manager').click(function () {
+            $.ajax({
+                url: '/system/system-init/',
+                type: 'POST',
+                data: {
+                    'mode': $(this).text()
+                },
+                dataType: 'JSON',
+                traditionail: true,
+                headers: {'X-CSRFtoken': $.cookie('csrftoken')},
+                success: function (obj) {
+                    alert(obj)
+                }
+            })
+        });
+    });
+</script>
+</body>
+
+</html>

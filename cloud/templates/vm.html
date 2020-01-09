@@ -1,0 +1,512 @@
+{% extends 'base.html' %}
+{%  load i18n %}
+
+{% block title %}{{ oem.oemname }}管理系统 | {{ vm.vm }}{% endblock %}
+
+{% block css %}
+    <link href="/static/css/plugins/footable/footable.core.css" rel="stylesheet">
+    <link href="/static/css/plugins/iCheck/custom.css" rel="stylesheet">
+{% endblock css %}
+
+{% block content %}
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-6">
+            <h2>{{ vm.vm }}</h2>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/audits/home/">主页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/cloud/cluster/">云计算</a>
+                </li>
+                <li class="breadcrumb-item">
+                    {% if cluster.project.project == 'admin' %}
+                    <a href="/cloud/host-{{ host.cluster.cluster }}">{{ host.cluster.cluster }}集群</a>
+                    {% else %}
+                    <a href="/cloud/host-{{ cloudhost.cluster.cluster }}">{{ cloudhost.cluster.cluster }}集群</a>
+                    {% endif %}
+                </li>
+                <li class="breadcrumb-item">
+                    {% if cluster.project.project == 'admin' %}
+                    <a href="/cloud/vsphere-{{ host.host }}?cluster={{ cluster.cluster }}&tab=vm">{{ host.host }}</a>
+                    {% else %}
+                    <a href="/cloud/vsphere-{{ cloudhost.host }}?cluster={{ cluster.cluster }}&tab=vm">{{ cloudhost.host }}</a>
+                    {% endif %}
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>{{ vm.vm }}</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="wrapper wrapper-content animated fadeInUp">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="m-b-md" uuid="{{ vm.uuid }}" vm="{{ vm.vm }}">
+                                    <button data-toggle="modal" class="btn btn-primary btn-xs float-right vm_manager" name="poweron">
+                                        <span class="fa fa-play"></span> {% trans 'poweron' %}</button>
+                                    <button data-toggle="modal" class="btn btn-danger btn-xs float-right vm_manager" name="poweroff">
+                                        <span class="fa fa-stop"></span> {% trans 'poweroff' %}</button>
+                                    <button data-toggle="modal" class="btn btn-warning btn-xs float-right vm_manager" name="suspend">
+                                        <span class="fa fa-pause"></span> {% trans 'suspend' %}</button>
+                                    <button data-toggle="modal" class="btn btn-danger btn-xs float-right vm_manager" name="reboot">
+                                        <span class="fa fa-refresh"></span> {% trans 'reboot' %}</button>
+                                    <button data-toggle="modal" class="btn btn-info btn-xs float-right vm_manager" name="softreboot">
+                                        <span class="fa fa-refresh"></span> {% trans 'softreboot' %}</button>
+                                    <span class="float-right" > | </span>
+                                    {% if cluster.project.project == 'admin' %}     {#  如果是主设备 #}
+                                        <button data-toggle="modal"
+{#                                                href="/cloud/vsphere-{{ host.host }}?cluster={{ host.cluster.cluster }}&tab=console&uuid={{ vm.uuid }}&vm={{ vm.vm }}" target="_blank"#}
+                                                class="btn btn-info btn-xs float-right console"><span class="fa fa-youtube-play"></span> {% trans 'console' %}</button>
+                                    {% else %}  {#  如果是云设备 #}
+            {#                            {% if loginuser.project.project == 'admin'%}    {#  如果是云设备,且登录账号为admin项目的管理员，可以分派虚拟机 #}
+            {#                                <button data-toggle="modal" class="btn btn-primary btn-xs vm_manager" name="allocation"><span class="fa fa-share"></span> {% trans 'allocation' %}</button>#}
+            {#                            {% endif %}#}
+                                        <button data-toggle="modal"
+{#                                                href="/cloud/vsphere-{{ cloudhost.host }}?cluster={{ cloudhost.cluster.cluster }}&tab=console&uuid={{ vm.uuid }}&vm={{ vm.vm }}" target="_blank"#}
+                                                class="btn btn-info btn-xs float-right console"><span class="fa fa-youtube-play"></span> {% trans 'console' %}</button>
+                                    {% endif %}
+{#                                    <h2>{{ vm.vm }}</h2>#}
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <dl class="row mb-0">
+                                    <div class="col-sm-2 text-sm-right">
+                                        <dt>虚拟机:</dt>
+                                    </div>
+                                    <div class="col-sm-10 text-sm-left">
+                                        <dd class="mb-1"><span class="text-navy">{{ vm.vm }}</span></dd>
+                                    </div>
+                                </dl>
+                                <dl class="row mb-0">
+                                    <div class="col-sm-2 text-sm-right">
+                                        <dt>状态:</dt>
+                                    </div>
+                                    <div class="col-sm-10 text-sm-left">
+                                        <dd class="mb-1"><span class="label state" state="{{ vm.power }}"><i class="fa"></i></span></dd>
+                                    </div>
+                                </dl>
+                                <dl class="row mb-0">
+                                    <div class="col-sm-2 text-sm-right">
+                                        <dt>系统:</dt>
+                                    </div>
+                                    <div class="col-sm-10 text-sm-left">
+                                        <dd class="mb-1">{{ vm.system }}</dd>
+                                    </div>
+                                </dl>
+                                <dl class="row mb-0">
+                                    <div class="col-sm-2 text-sm-right">
+                                        <dt>ip:</dt>
+                                    </div>
+                                    <div class="col-sm-10 text-sm-left">
+                                        <dd class="mb-1">{{ vm.ip }}</dd>
+                                    </div>
+                                </dl>
+                            </div>
+                            <div class="col-lg-6" id="cluster_info">
+                                <dl class="row mb-0">
+                                    <div class="col-sm-2 text-sm-right">
+                                        <dt>CPU:</dt>
+                                    </div>
+                                    <div class="col-sm-10 text-sm-left">
+                                        <dd class="mb-1">{{ vm.cpu }}个</dd>
+                                    </div>
+                                </dl>
+                                <dl class="row mb-0">
+                                    <div class="col-sm-2 text-sm-right">
+                                        <dt>内存:</dt>
+                                    </div>
+                                    <div class="col-sm-10 text-sm-left">
+                                        <dd class="mb-1">{{ vm.mem }}G</dd>
+                                    </div>
+                                </dl>
+                                <dl class="row mb-0">
+                                    <div class="col-sm-2 text-sm-right">
+                                        <dt>硬盘:</dt>
+                                    </div>
+                                    <div class="col-sm-10 text-sm-left">
+                                        <dd class="mb-1">{{ vm.disk }}G</dd>
+                                    </div>
+                                </dl>
+                                <dl class="row mb-0">
+                                    <div class="col-sm-2 text-sm-right">
+                                        <dt>网卡:</dt>
+                                    </div>
+                                    <div class="col-sm-10 text-sm-left">
+                                        <dd class="mb-1">{{ vm.netcard }}个</dd>
+                                    </div>
+                                </dl>
+{#                                <dl class="row mb-0">#}
+{#                                    <div class="col-sm-4 text-sm-right">#}
+{#                                        <dt>所有者:</dt>#}
+{#                                    </div>#}
+{#                                    <div class="col-sm-8 text-sm-left">#}
+{#                                        <dd class="project-people mb-1">#}
+{#                                            <img alt="image" class="rounded-circle"#}
+{#                                                 src="/static/img/user/{{ host.host_cluster.cluster_owner.user_group.caption|lower }}.jpg"#}
+{#                                                 title="{{ host.host_cluster.cluster_owner.username }}">#}
+{#                                        </dd>#}
+{#                                    </div>#}
+{#                                </dl>#}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <dl class="row mb-0">
+                                    <div class="col-sm-2 text-sm-right">
+                                        <dt>CPU:</dt>
+                                    </div>
+                                    <div class="col-sm-10 text-sm-left">
+                                        <dd>
+                                            <div class="progress m-b-1">
+                                                <div style="width: {{ cloudbar.cpu }}%"
+                                                     class="progress-bar progress-bar-striped progress-bar-animated"></div>
+                                            </div>
+                                            <small>CPU使用率 <strong>{{ cloudbar.cpu }}%</strong></small>
+                                        </dd>
+                                    </div>
+                                </dl>
+                            </div>
+                            <div class="col-lg-6">
+                                <dl class="row mb-0">
+                                    <div class="col-sm-2 text-sm-right">
+                                        <dt>内存:</dt>
+                                    </div>
+                                    <div class="col-sm-10 text-sm-left">
+                                        <dd>
+                                            <div class="progress m-b-1">
+                                                <div style="width: {{ cloudbar.memory }}%"
+                                                     class="progress-bar progress-bar-striped progress-bar-animated progress-bar-info"></div>
+                                            </div>
+                                            <small>内存使用率 <strong>{{ cloudbar.memory }}%</strong></small>
+                                        </dd>
+                                    </div>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="ibox ">
+                            <div class="ibox-title">
+                                <h5>性能监控</h5>
+                                <div class="ibox-tools">
+                                    <a class="collapse-link">
+                                        <i class="fa fa-chevron-up"></i>
+                                    </a>
+                                    <a class="close-link">
+                                        <i class="fa fa-times"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="ibox-content">
+                                <div class="row uuid" uuid="{{ vm.uuid }}" >
+                                    <div class="col-sm-2 m-b-xs"><select class="form-control-sm form-control input-s-sm inline nameCanvas">
+                                        <option value="cpu">CPU</option>
+                                        <option value="memory">内存</option>
+                                        <option value="disk">硬盘</option>
+                                        <option value="net">网络</option>
+                                    </select>
+                                    </div>
+                                    <div class="col-sm-4 m-b-xs">
+                                        <div class="btn-group btn-group-toggle timeCanvas" data-toggle="buttons">
+                                            <label class="btn btn-sm btn-white">
+                                                <input type="radio" time="day" autocomplete="off">一天
+                                            </label>
+                                            <label class="btn btn-sm btn-white">
+                                                <input type="radio" time="3hour" autocomplete="off">一小时
+                                            </label>
+                                            <label class="btn btn-sm btn-white active">
+                                                <input type="radio" time="10min" autocomplete="off" checked>十分钟
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div id="container">
+                                            <canvas id="monitorChart" height="60"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="/static/js/plugins/footable/footable.all.min.js"></script>
+    <!-- Jquery Validate -->
+    <script src="/static/js/plugins/validate/jquery.validate.min.js"></script>
+    <script src="/static/js/plugins/validate/messages_zh.min.js"></script>
+    <!-- ChartJS-->
+    <script src="/static/js/plugins/chartJs/Chart.min.js"></script>
+    <script src="/static/js/plugins/chartJs/Chart.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            menuActive();
+            vmCss();
+            drawCanvas();
+            vmConfig();
+            vmConsole()
+        });
+        function menuActive() {
+            $('#cluster-menu, #cloud-menu').addClass('active');
+            $('#cluster-menu .nav-second-level').addClass('in').attr('aria-expanded','true');
+        }
+        function vmCss() {
+            vmSate();
+        }
+        function vmSate() {
+            var state = $('.state');
+            if(state.attr('state') =='poweredOn'){ state.addClass('label-primary');state.children().addClass('fa-play')}
+            else if(state.attr('state')=='suspended'){ state.addClass('label-warning');state.children().addClass('fa-pause')}
+            else {state.addClass('label-danger');state.children().addClass('fa-stop')}
+        }
+        function cpuChart(cpucanvas, unit) {
+            var lineData = {
+                datasets: [
+                    {
+                        label: "CPU",
+                        backgroundColor: "rgba(26,179,148,0.5)",
+                        borderColor: "rgba(26,179,148,0.7)",
+                        pointBackgroundColor: "rgba(26,179,148,1)",
+                        pointBorderColor: "#fff",
+                        data: cpucanvas,
+                    }
+                ]
+            };
+            var lineOptions = {
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {unit: unit}
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: '使用率%'
+                        }
+                    }]
+                }
+            };
+            var ctx = document.getElementById("monitorChart").getContext("2d");
+            new Chart(ctx, {type: 'line', data: lineData, options: lineOptions});
+        }
+        function memoryChart(memorychart, unit) {
+            var lineData = {
+                datasets: [
+                    {
+                        label: "内存",
+                        backgroundColor: "rgba(26,179,148,0.5)",
+                        borderColor: "rgba(26,179,148,0.7)",
+                        pointBackgroundColor: "rgba(26,179,148,1)",
+                        pointBorderColor: "#fff",
+                        data: memorychart,
+                    }
+                ]
+            };
+            var lineOptions = {
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {unit: unit}
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: '使用率%'
+                        }
+                    }]
+                }
+            };
+            var ctx = document.getElementById("monitorChart").getContext("2d");
+            new Chart(ctx, {type: 'line', data: lineData, options: lineOptions});
+        }
+        function diskChart(diskcanvas_read, diskcanvas_write, unit) {
+            var lineData = {
+                datasets: [
+                    {
+                        label: "硬盘读",
+                        backgroundColor: "rgba(26,179,148,0.5)",
+                        borderColor: "rgba(26,179,148,0.7)",
+                        pointBackgroundColor: "rgba(26,179,148,1)",
+                        pointBorderColor: "#fff",
+                        data: diskcanvas_read,
+                    },
+                    {
+                        label: "硬盘写",
+                        backgroundColor: "rgba(89,70,226,0.5)",
+                        borderColor: "rgba(89,70,226,0.7)",
+                        pointBackgroundColor: "rgba(89,70,226,1)",
+                        pointBorderColor: "#fff",
+                        data: diskcanvas_write,
+                    }
+                ]
+            };
+            var lineOptions = {
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {unit: unit}
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Mbps'
+                        }
+                    }]
+                }
+            };
+            var ctx = document.getElementById("monitorChart").getContext("2d");
+            new Chart(ctx, {type: 'line', data: lineData, options: lineOptions});
+        }
+        function netChart(netcanvas_out, netcanvas_in, unit='hour') {
+            var lineData = {
+                datasets: [
+                    {
+                        label: "网络出",
+                        backgroundColor: "rgba(26,179,148,0.5)",
+                        borderColor: "rgba(26,179,148,0.7)",
+                        pointBackgroundColor: "rgba(26,179,148,1)",
+                        pointBorderColor: "#fff",
+                        data: netcanvas_out,
+                    },
+                    {
+                        label: "网络入",
+                        backgroundColor: "rgba(89,70,226,0.5)",
+                        borderColor: "rgba(89,70,226,0.7)",
+                        pointBackgroundColor: "rgba(89,70,226,1)",
+                        pointBorderColor: "#fff",
+                        data: netcanvas_in,
+                    }
+                ]
+            };
+            var lineOptions = {
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {unit: unit}
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'mbps'
+                        }
+                    }]
+                }
+            };
+            var ctx = document.getElementById("monitorChart").getContext("2d");
+            new Chart(ctx, {type: 'line', data: lineData, options: lineOptions});
+        }
+        function drawCanvas() {
+            function clearCanvas(){
+                $('#container').children().remove();
+                $('#container').append('<canvas id="monitorChart" height="60"></canvas>');
+            }
+            function getCanvas(name, uuid, time) {
+                $.ajax({
+                    {% if cluster.project.project == 'admin' %}
+                    url: '/cloud/canvasconfig-{{ host.cluster.cluster }}/',
+                    {% else %}
+                    url: '/cloud/canvasconfig-{{ cloudhost.cluster.cluster }}/',
+                    {% endif %}
+                    type: 'POST',
+                    data: {'time': time, 'uuid': uuid},
+                    dataType: 'JSON',
+                    traditionail: true,
+                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},
+                    success: function (obj) {
+                        if (obj.status) {
+                            clearCanvas();
+                            var cloudcanvas = obj.data;
+                            if(time=='10min')var unit = 'minute';else var unit = 'hour';
+                            if(name=='cpu')cpuChart(cloudcanvas.cpucanvas, unit);
+                            if(name=='memory')memoryChart(cloudcanvas.memorycanvas, unit);
+                            if(name=='disk')diskChart(cloudcanvas.diskcanvas_read, cloudcanvas.diskcanvas_write, unit);
+                            if(name=='net')netChart(cloudcanvas.netcanvas_out, cloudcanvas.netcanvas_in, unit);
+                        }
+                    }
+                })
+            }
+            var cloudcanvas = {{ cloudcanvas|safe }};
+            cpuChart(cloudcanvas.cpucanvas, 'minute');
+            $('.timeCanvas').click(function () {
+                {#防止juqery太快了，css还没来得及改变#}
+                setTimeout(function () {
+                    var name = $('.nameCanvas').val();
+                    var uuid = $('.uuid').attr('uuid');
+                    var time = $('.timeCanvas').find('.active').children().attr('time');
+                    getCanvas(name, uuid, time)
+                }, 500)
+
+            });
+            $('.nameCanvas').change(function () {
+                var name = $(this).val();
+                var uuid = $('.uuid').attr('uuid');
+                var time = $('.timeCanvas').find('.active').children().attr('time');
+                getCanvas(name, uuid, time)
+            })
+        }
+        function vmConfig() {
+            $('.vm_manager').click(function () {
+                var uuidlist = [];
+                var action = $(this).attr('name');
+                var uuid = $(this).parent().attr('uuid');
+                uuidlist.push(uuid);
+                yuAlert('info', '您好 {{ loginuser.username }}','正在配置虚拟机');
+                $.ajax({
+                    {% if cluster.project.project == 'admin' %}
+                    url: '/cloud/vsphereconfig-{{ host.cluster.cluster }}-{{ host.host }}/',
+                    {% else %}
+                    url: '/cloud/vsphereconfig-{{ cloudhost.cluster.cluster }}-{{ cloudhost.host }}/',
+                    {% endif %}
+                    type: 'POST',
+                    data: {'action': action, 'uuidlist': uuidlist},
+                    dataType: 'JSON',
+                    traditionail: true,
+                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},
+                    success: function (obj) {
+                        if (obj.status) {
+                            location.reload()
+                        } else {
+                            yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                        }
+                    }
+                })
+            });
+        }
+        function vmConsole() {
+            $('.console').click(function () {
+                var urlport = window.location.port;
+                var uuid = $(this).parent().attr('uuid');
+                var vm = $(this).parent().attr('vm');
+                {% if cluster.project.project == 'admin' %}
+                var url = '/cloud/vsphere-{{ host.host }}?cluster={{ host.cluster.cluster }}&tab=console&uuid={0}&vm={1}&urlport={2}'.format(uuid, vm, urlport);
+                {% else %}
+                var url = '/cloud/vsphere-{{ cloudhost.host }}?cluster={{ cloudhost.cluster.cluster }}&tab=console&uuid={0}&vm={1}&urlport={2}'.format(uuid, vm, urlport);
+                {% endif %}
+                window.open( url, '_blank');
+            });
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>{% block title %}{% endblock %}</title>
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
+
+    <!-- Toastr style -->
+    <link href="/static/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <!-- Gritter -->
+    <link href="/static/js/plugins/gritter/jquery.gritter.css" rel="stylesheet">
+
+    <link href="/static/css/animate.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    {% block css %}{% endblock %}
+    <script></script>
+</head>
+
+<body>
+<div id="wrapper">
+    <nav class="navbar-default navbar-static-side" role="navigation">
+        <div class="sidebar-collapse">
+            <ul class="nav metismenu" id="side-menu">
+                <li class="nav-header">
+                    <div class="dropdown profile-element">
+                        <img alt="image" class="rounded-circle img-md"
+                             src="/static/img/user/{% if loginuser.project.project == 'admin' %}admin{% else %}user{% endif %}.jpg"/>
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <span class="text-muted text-xs block">管理员 <b class="caret"></b></span>
+                        </a>
+                        <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                            <li><a class="dropdown-item" href="/authen/user/">用户</a></li>
+{#                            <li><a class="dropdown-item" href="/admin-system">设置</a></li>#}
+                            {#                            <li><a class="dropdown-item" href="mailbox.html">Mailbox</a></li>#}
+                            <li class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/authen/logout/">登出</a></li>
+                        </ul>
+                    </div>
+                    <div class="logo-element">
+                        eyes
+                    </div>
+                </li>
+                <li id="home-menu">
+                    <a href="/audits/home/"><i class="fa fa-th-large"></i> <span class="nav-label">主页</span></a>
+                </li>
+                <li id="cluster-menu">
+                    <a href="#"><i class="fa fa-globe"></i> <span class="nav-label">集群管理</span><span class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level collapse">
+{#                        <li id="network-menu"><a href="/admin-index?cluster=Network&cluster_type=网络">网络</a></li>#}
+{#                        <li id="server-menu"><a href="/admin-index?cluster=Server&cluster_type=服务器">服务器</a></li>#}
+{#                        <li id="pc-menu"><a href="/admin-index?cluster=PC&cluster_type=电脑">电脑</a></li>#}
+{#                        <li id="dumb-menu"><a href="/admin-index?cluster=Dumb&cluster_type=哑终端">哑终端</a></li>#}
+                        <li id="cloud-menu"><a href="/cloud/cluster/">云计算</a></li>
+                    </ul>
+                </li>
+{#                <li id="top-menu">#}
+{#                    <a href="#"><i class="fa fa-sitemap"></i> <span class="nav-label">拓扑</span><span class="fa arrow"></span></a>#}
+{#                    <ul class="nav nav-second-level collapse">#}
+{#                        <li id="logictop-menu"><a href="/admin-logictop">逻辑拓扑</a></li>#}
+                        {#                        <li id="realtop-menu"><a href="/admin-realtop">实际拓扑</a></li>#}
+{#                    </ul>#}
+{#                </li>#}
+                {% if loginuser.project.project == 'admin' %}
+                    <li id="project-menu">
+                        <a href="/authen/project/"><i class="fa fa-suitcase"></i> <span class="nav-label">项目管理</span></a>
+                    </li>
+                {% endif %}
+                <li id="users-menu">
+                    <a href="/authen/user/"><i class="fa fa-users"></i> <span class="nav-label">账号管理</span></a>
+                </li>
+                <li id="log-menu">
+                    <a href="#"><i class="fa fa-envelope"></i> <span class="nav-label">日志</span><span class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level collapse">
+                        <li id="systemlog-menu"><a href="/audits/systemlog/">错误日志</a></li>
+                        <li id="operalog-menu"><a href="/audits/operalog/">操作日志</a></li>
+                    </ul>
+                </li>
+{#                <li id="alarm-menu">#}
+{#                    <a href="#"><i class="fa fa-bell"></i> <span class="nav-label">告警管理</span><span class="fa arrow"></span></a>#}
+{#                    <ul class="nav nav-second-level collapse">#}
+{#                        <li id="webalarm-menu"><a href="/admin-alarm?page=webalarm">网页告警</a></li>#}
+{#                        <li id="emailalarm-menu"><a href="/admin-alarm?page=emailalarm">邮件告警</a></li>#}
+{#                    </ul>#}
+{#                </li>#}
+                {% if loginuser.project.project == 'admin' %}
+                    <li id="system-menu">
+                        <a href="/system/system"><i class="fa fa-desktop"></i> <span class="nav-label">系统</span></a>
+                    </li>
+{#                    <li id="license-menu">#}
+{#                        <a href="/admin-license"><i class="fa fa-pencil-square-o"></i> <span class="nav-label">授权</span></a>#}
+{#                    </li>#}
+                {% endif %}
+            </ul>
+
+        </div>
+    </nav>
+
+    <div id="page-wrapper" class="gray-bg">
+        <div class="row border-bottom">
+            <nav class="navbar navbar-static-top white-bg" role="navigation" style="margin-bottom: 0">
+                <div class="navbar-header">
+                    <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+                    {#            <form role="search" class="navbar-form-custom" action="search_results.html">#}
+                    {#                <div class="form-group">#}
+                    {#                    <input type="text" placeholder="Search for something..." class="form-control" name="top-search" id="top-search">#}
+                    {#                </div>#}
+                    {#            </form>#}
+                </div>
+                <ul class="nav navbar-top-links navbar-right">
+                    <li>
+                        {#                    <span class="m-r-sm text-muted welcome-message">Welcome to yuWeb admin Pages.</span>#}
+                        <span class="m-r-sm text-muted welcome-message">欢迎来到{{ oem.oemname }}管理平台</span>
+                    </li>
+                    {#                    <li class="dropdown">#}
+                    {#                        <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">#}
+                    {#                            <i class="fa fa-envelope"></i> <span class="label label-warning">16</span>#}
+                    {#                        </a>#}
+                    {#                        <ul class="dropdown-menu dropdown-messages">#}
+                    {#                            <li>#}
+                    {#                                <div class="dropdown-messages-box">#}
+                    {#                                    <a class="dropdown-item float-left" href="profile.html">#}
+                    {#                                        <img alt="image" class="rounded-circle" src="/static/img/a7.jpg">#}
+                    {#                                    </a>#}
+                    {#                                    <div>#}
+                    {#                                        <small class="float-right">46h ago</small>#}
+                    {#                                        <strong>Mike Loreipsum</strong> started following <strong>Monica Smith</strong>. <br>#}
+                    {#                                        <small class="text-muted">3 days ago at 7:58 pm - 10.06.2014</small>#}
+                    {#                                    </div>#}
+                    {#                                </div>#}
+                    {#                            </li>#}
+                    {#                            <li class="dropdown-divider"></li>#}
+                    {#                            <li>#}
+                    {#                                <div class="dropdown-messages-box">#}
+                    {#                                    <a class="dropdown-item float-left" href="profile.html">#}
+                    {#                                        <img alt="image" class="rounded-circle" src="/static/img/a4.jpg">#}
+                    {#                                    </a>#}
+                    {#                                    <div>#}
+                    {#                                        <small class="float-right text-navy">5h ago</small>#}
+                    {#                                        <strong>Chris Johnatan Overtunk</strong> started following <strong>Monica Smith</strong>. <br>#}
+                    {#                                        <small class="text-muted">Yesterday 1:21 pm - 11.06.2014</small>#}
+                    {#                                    </div>#}
+                    {#                                </div>#}
+                    {#                            </li>#}
+                    {#                            <li class="dropdown-divider"></li>#}
+                    {#                            <li>#}
+                    {#                                <div class="dropdown-messages-box">#}
+                    {#                                    <a class="dropdown-item float-left" href="profile.html">#}
+                    {#                                        <img alt="image" class="rounded-circle" src="/static/img/profile.jpg">#}
+                    {#                                    </a>#}
+                    {#                                    <div>#}
+                    {#                                        <small class="float-right">23h ago</small>#}
+                    {#                                        <strong>Monica Smith</strong> love <strong>Kim Smith</strong>. <br>#}
+                    {#                                        <small class="text-muted">2 days ago at 2:30 am - 11.06.2014</small>#}
+                    {#                                    </div>#}
+                    {#                                </div>#}
+                    {#                            </li>#}
+                    {#                            <li class="dropdown-divider"></li>#}
+                    {#                            <li>#}
+                    {#                                <div class="text-center link-block">#}
+                    {#                                    <a href="mailbox.html" class="dropdown-item">#}
+                    {#                                        <i class="fa fa-envelope"></i> <strong>Read All Messages</strong>#}
+                    {#                                    </a>#}
+                    {#                                </div>#}
+                    {#                            </li>#}
+                    {#                        </ul>#}
+                    {#                    </li>#}
+                    {#                    <li class="dropdown">#}
+                    {#                        <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">#}
+                    {#                            <i class="fa fa-bell"></i> <span class="label label-primary">8</span>#}
+                    {#                        </a>#}
+                    {#                        <ul class="dropdown-menu dropdown-alerts">#}
+                    {#                            <li>#}
+                    {#                                <a href="mailbox.html" class="dropdown-item">#}
+                    {#                                    <div>#}
+                    {#                                        <i class="fa fa-envelope fa-fw"></i> You have 16 messages#}
+                    {#                                        <span class="float-right text-muted small">4 minutes ago</span>#}
+                    {#                                    </div>#}
+                    {#                                </a>#}
+                    {#                            </li>#}
+                    {#                            <li class="dropdown-divider"></li>#}
+                    {#                            <li>#}
+                    {#                                <a href="profile.html" class="dropdown-item">#}
+                    {#                                    <div>#}
+                    {#                                        <i class="fa fa-twitter fa-fw"></i> 3 New Followers#}
+                    {#                                        <span class="float-right text-muted small">12 minutes ago</span>#}
+                    {#                                    </div>#}
+                    {#                                </a>#}
+                    {#                            </li>#}
+                    {#                            <li class="dropdown-divider"></li>#}
+                    {#                            <li>#}
+                    {#                                <a href="grid_options.html" class="dropdown-item">#}
+                    {#                                    <div>#}
+                    {#                                        <i class="fa fa-upload fa-fw"></i> Server Rebooted#}
+                    {#                                        <span class="float-right text-muted small">4 minutes ago</span>#}
+                    {#                                    </div>#}
+                    {#                                </a>#}
+                    {#                            </li>#}
+                    {#                            <li class="dropdown-divider"></li>#}
+                    {#                            <li>#}
+                    {#                                <div class="text-center link-block">#}
+                    {#                                    <a href="notifications.html" class="dropdown-item">#}
+                    {#                                        <strong>See All Alerts</strong>#}
+                    {#                                        <i class="fa fa-angle-right"></i>#}
+                    {#                                    </a>#}
+                    {#                                </div>#}
+                    {#                            </li>#}
+                    {#                        </ul>#}
+                    {#                    </li>#}
+                    <li>
+                        <a href="/authen/logout/">
+                            <i class="fa fa-sign-out"></i> 注销 {{ loginuser.username }}
+                        </a>
+                    </li>
+                    <li>
+                        <a class="right-sidebar-toggle">
+                            <i class="fa fa-tasks"></i>
+                        </a>
+                    </li>
+                </ul>
+
+            </nav>
+        </div>
+        {% block content %}{% endblock %}
+        {#        <div class="row  border-bottom white-bg dashboard-header">#}
+        <div class="footer">
+            <div class="float-right">
+                {#                10GB of <strong>250GB</strong> Free.#}
+            </div>
+            <div>
+                {#                <strong>Copyright</strong> Example Company &copy; 2018-2019#}
+                <strong>{{ oem.company }}</strong> 版权所有.&copy; 2018-2019
+            </div>
+        </div>
+    </div>
+    {#    <div class="small-chat-box fadeInRight animated">#}
+    {##}
+    {#        <div class="heading" draggable="true">#}
+    {#            <small class="chat-date float-right">#}
+    {#                02.19.2015#}
+    {#            </small>#}
+    {#            Small chat#}
+    {#        </div>#}
+    {##}
+    {#        <div class="content">#}
+    {##}
+    {#            <div class="left">#}
+    {#                <div class="author-name">#}
+    {#                    Monica Jackson#}
+    {#                    <small class="chat-date">#}
+    {#                        10:02 am#}
+    {#                    </small>#}
+    {#                </div>#}
+    {#                <div class="chat-message active">#}
+    {#                    Lorem Ipsum is simply dummy text input.#}
+    {#                </div>#}
+    {##}
+    {#            </div>#}
+    {#            <div class="right">#}
+    {#                <div class="author-name">#}
+    {#                    Mick Smith#}
+    {#                    <small class="chat-date">#}
+    {#                        11:24 am#}
+    {#                    </small>#}
+    {#                </div>#}
+    {#                <div class="chat-message">#}
+    {#                    Lorem Ipsum is simpl.#}
+    {#                </div>#}
+    {#            </div>#}
+    {#            <div class="left">#}
+    {#                <div class="author-name">#}
+    {#                    Alice Novak#}
+    {#                    <small class="chat-date">#}
+    {#                        08:45 pm#}
+    {#                    </small>#}
+    {#                </div>#}
+    {#                <div class="chat-message active">#}
+    {#                    Check this stock char.#}
+    {#                </div>#}
+    {#            </div>#}
+    {#            <div class="right">#}
+    {#                <div class="author-name">#}
+    {#                    Anna Lamson#}
+    {#                    <small class="chat-date">#}
+    {#                        11:24 am#}
+    {#                    </small>#}
+    {#                </div>#}
+    {#                <div class="chat-message">#}
+    {#                    The standard chunk of Lorem Ipsum#}
+    {#                </div>#}
+    {#            </div>#}
+    {#            <div class="left">#}
+    {#                <div class="author-name">#}
+    {#                    Mick Lane#}
+    {#                    <small class="chat-date">#}
+    {#                        08:45 pm#}
+    {#                    </small>#}
+    {#                </div>#}
+    {#                <div class="chat-message active">#}
+    {#                    I belive that. Lorem Ipsum is simply dummy text.#}
+    {#                </div>#}
+    {#            </div>#}
+    {##}
+    {##}
+    {#        </div>#}
+    {#        <div class="form-chat">#}
+    {#            <div class="input-group input-group-sm">#}
+    {#                <input type="text" class="form-control">#}
+    {#                <span class="input-group-btn"> <button#}
+    {#                        class="btn btn-primary" type="button">Send#}
+    {#                </button> </span></div>#}
+    {#        </div>#}
+    {##}
+    {#    </div>#}
+    {#    <div id="small-chat">#}
+    {##}
+    {#        <span class="badge badge-warning float-right">5</span>#}
+    {#        <a class="open-small-chat" href="">#}
+    {#            <i class="fa fa-comments"></i>#}
+    {##}
+    {#        </a>#}
+    {#    </div>#}
+    <div id="right-sidebar" class="animated">
+        <div class="sidebar-container">
+
+            <ul class="nav nav-tabs navs-3">
+                {#                <li>#}
+                {#                    <a class="nav-link active" data-toggle="tab" href="#tab-1"> Notes </a>#}
+                {#                </li>#}
+                {#                <li>#}
+                {#                    <a class="nav-link" data-toggle="tab" href="#tab-2"> Projects </a>#}
+                {#                </li>#}
+                <li>
+                    <a class="nav-link active" data-toggle="tab" href="#tab-3"> <i class="fa fa-gear"></i> </a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+
+
+                {#                <div id="tab-1" class="tab-pane active">#}
+                {##}
+                {#                    <div class="sidebar-title">#}
+                {#                        <h3><i class="fa fa-comments-o"></i> Latest Notes</h3>#}
+                {#                        <small><i class="fa fa-tim"></i> You have 10 new message.</small>#}
+                {#                    </div>#}
+                {##}
+                {#                    <div>#}
+                {##}
+                {#                        <div class="sidebar-message">#}
+                {#                            <a href="#">#}
+                {#                                <div class="float-left text-center">#}
+                {#                                    <img alt="image" class="rounded-circle message-avatar" src="/static/img/a1.jpg">#}
+                {##}
+                {#                                    <div class="m-t-xs">#}
+                {#                                        <i class="fa fa-star text-warning"></i>#}
+                {#                                        <i class="fa fa-star text-warning"></i>#}
+                {#                                    </div>#}
+                {#                                </div>#}
+                {#                                <div class="media-body">#}
+                {##}
+                {#                                    There are many variations of passages of Lorem Ipsum available.#}
+                {#                                    <br>#}
+                {#                                    <small class="text-muted">Today 4:21 pm</small>#}
+                {#                                </div>#}
+                {#                            </a>#}
+                {#                        </div>#}
+                {#                    </div>#}
+                {##}
+                {#                </div>#}
+                {##}
+                {#                <div id="tab-2" class="tab-pane">#}
+                {##}
+                {#                    <div class="sidebar-title">#}
+                {#                        <h3><i class="fa fa-cube"></i> Latest projects</h3>#}
+                {#                        <small><i class="fa fa-tim"></i> You have 14 projects. 10 not completed.</small>#}
+                {#                    </div>#}
+                {#                    <ul class="sidebar-list">#}
+                {#                    </ul>#}
+                {##}
+                {#                </div>#}
+
+                <div id="tab-3" class="tab-pane active">
+
+                    <div class="sidebar-title">
+                        <h3><i class="fa fa-gears"></i> 设置</h3>
+                        {#                        <h3><i class="fa fa-gears"></i> Settings</h3>#}
+                        {#                        <small><i class="fa fa-tim"></i> You have 14 projects. 10 not completed.</small>#}
+                    </div>
+
+                    <div class="setings-item default-skin">
+                        <span class="skin-name">
+                            <a href="" class="s-skin-0">默认</a>
+                        </span>
+                    </div>
+                    <div class="setings-item blue-skin">
+                        <span class="skin-name">
+                            <a href="" class="s-skin-1">蓝色</a>
+                        </span>
+                    </div>
+                    <div class="setings-item yellow-skin">
+                        <span class="skin-name">
+                            <a href="" class="s-skin-3">黄色</a>
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mainly scripts -->
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/jquery.cookie.min.js"></script>
+<script src="/static/js/popper.min.js"></script>
+<script src="/static/js/bootstrap.js"></script>
+<script src="/static/js/plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="/static/js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+
+<!-- Flot -->
+{#<script src="/static/js/plugins/flot/jquery.flot.js"></script>#}
+{#<script src="/static/js/plugins/flot/jquery.flot.tooltip.min.js"></script>#}
+{#<script src="/static/js/plugins/flot/jquery.flot.spline.js"></script>#}
+{#<script src="/static/js/plugins/flot/jquery.flot.resize.js"></script>#}
+{#<script src="/static/js/plugins/flot/jquery.flot.pie.js"></script>#}
+
+<!-- Custom and plugin javascript -->
+<script src="/static/js/inspinia.js"></script>
+<script src="/static/js/plugins/pace/pace.min.js"></script>
+
+<!-- jQuery UI -->
+<script src="/static/js/plugins/jquery-ui/jquery-ui.min.js"></script>
+
+<!-- GITTER -->
+<script src="/static/js/plugins/gritter/jquery.gritter.min.js"></script>
+
+<!-- Sparkline -->
+<script src="/static/js/plugins/sparkline/jquery.sparkline.min.js"></script>
+
+<!-- Sparkline demo data  -->
+<script src="/static/js/demo/sparkline-demo.js"></script>
+
+<!-- Toastr -->
+<script src="/static/js/plugins/toastr/toastr.min.js"></script>
+
+<!-- openeyes -->
+<script src="/static/js/openeyes.js"></script>
+
+<script>
+    $(document).ready(function () {
+        theme('{{ system.theme }}');
+        openAlert();
+        function openAlert() {
+            var alert = {{ alert|safe }};
+            for (var a = 0; a < alert.length; a++) {
+                yuAlert(alert[a].state, alert[a].head, alert[a].body, alert[a].timeout, alert[a].show)
+            }
+        }
+        timeOut(15);
+    })
+</script>
+{% block js %}{% endblock %}
+</body>
+</html>

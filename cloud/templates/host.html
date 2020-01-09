@@ -1,0 +1,562 @@
+{% extends 'base.html' %}
+{%  load i18n %}
+
+{% block title %}{{ oem.oemname }}管理系统 | {{ clust.cluster }}集群{% endblock %}
+
+{% block css %}
+    <link href="/static/css/plugins/footable/footable.core.css" rel="stylesheet">
+    <link href="/static/css/plugins/iCheck/custom.css" rel="stylesheet">
+{% endblock css %}
+
+{% block content %}
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-4">
+            <h2>{{ clust.cluster }}集群</h2>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/audits/home/">主页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/cloud/cluster/">云计算</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>{{ clust.cluster }}</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="wrapper wrapper-content animated fadeInUp">
+
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>分配给此账户的所有{{ clust.cluster }}集群的设备</h5>
+                        <div class="ibox-tools">
+{#                            <a data-toggle="modal" href="#getexcel-form" class="btn btn-primary btn-xs">导出Excel</a>#}
+                            {% if clust.project.project == 'admin' %}
+                            <button data-toggle="modal" href="#addhost-form" class="btn btn-primary btn-xs addhost">{% trans 'ceate host' %}</button>
+                            <button data-toggle="modal" href="#edithost-form" class="btn btn-warning btn-xs edithost">{% trans 'edit host' %}</button>
+                            <button data-toggle="modal" class="btn btn-danger btn-xs delhost">{% trans 'delete host' %}</button>
+                            <button data-toggle="modal" class="btn btn-info btn-xs web"><i class="fa fa-internet-explorer"></i> Web</button>
+                            {% elif loginuser.project.project == 'admin' %}
+                            <button data-toggle="modal" href="#addcloudhost-form" class="btn btn-primary btn-xs">{% trans 'ceate cloudhost' %}</button>
+                            <button data-toggle="modal" href="#editcloudhost-form" class="btn btn-warning btn-xs editcloudhost">{% trans 'edit cloudhost' %}</button>
+                            <button data-toggle="modal" class="btn btn-danger btn-xs delcloudhost">{% trans 'delete cloudhost' %}</button>
+                            {% endif %}
+                        </div>
+                        {% if clust.project.project == 'admin' %}{# 如果本集群是admin项目集群，可创建主设备 #}
+                        <div class="modal inmodal fade" id="addhost-form" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                                                class="sr-only">{% trans 'Close' %}</span></button>
+{#                                        <i class="fa fa-laptop modal-icon"></i>#}
+                                        <h4 class="modal-title">{% trans 'ceate host' %}</h4>
+{#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+                                    </div>
+                                    <div class="modal-body">
+                                        <form class="am-form" id="addhost_form">
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                <div class="form-group"><label>设备名</label>
+                                                <input type="text" id="host" name="host" minlength="2" maxlength="32" placeholder="输入设备"
+                                                       class="form-control" required>
+                                                </div>
+                                                <div class="form-group"><label>IP地址</label>
+                                                <input type="text" id="ip" name="ip" maxlength="16" placeholder="输入设备IP地址"
+                                                       class="form-control" required>
+                                                </div>
+                                                <div class="form-group"><label>系统</label>
+                                                    <select class="form-control m-b" name="system">
+                                                        <option value="vSphere">vSphere</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group"><label>端口</label>
+                                                <input type="text" id="port" name="port" value="443" maxlength="16" placeholder="输入设备端口"
+                                                       class="form-control" required>
+                                                </div>
+                                                <div class="form-group"><label>登录账号</label>
+                                                <input type="text" id="user" name="user" maxlength="32" placeholder="输入设备登录账号"
+                                                       class="form-control" required>
+                                                </div>
+                                                <div class="form-group"><label>登录密码</label>
+                                                <input type="password" id="pwd" name="pwd" maxlength="32" placeholder="输入设备登录密码"
+                                                       class="form-control" required>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                                        <button type="button" class="btn btn-primary" id="addhost">保存</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% elif loginuser.project.project == 'admin' %}{# 如果本集群是user集群，登录账号的项目是admin管理员，可创建云设备 #}
+                        <div class="modal inmodal fade" id="addcloudhost-form" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                                                class="sr-only">Close</span></button>
+    {#                                        <i class="fa fa-laptop modal-icon"></i>#}
+                                        <h4 class="modal-title">{% trans 'ceate cloudhost' %}</h4>
+    {#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+                                    </div>
+                                    <div class="modal-body">
+                                        <form class="am-form" id="addcloudhost_form">
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                <div class="form-group"><label>设备名</label>
+                                                <input type="text" id="cloudhost" name="host" minlength="2" maxlength="32" placeholder="输入设备"
+                                                       class="form-control" required>
+                                                </div>
+                                                <div class="form-group"><label>主设备</label>
+                                                    <select class="form-control m-b" name="adminhost">
+                                                        {% for row in cloudadmin_host %}<option value="{{ row.host }}">{{ row.host }}</option>{% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="form-group"><label>登录账号</label>
+                                                    <input type="text" id="clouduser" name="user" maxlength="32" placeholder="输入设备登录账号"
+                                                        class="form-control" required>
+                                                </div>
+                                                <div class="form-group"><label>登录密码</label>
+                                                    <input type="password" id="cloudpwd" name="pwd" maxlength="32" placeholder="输入设备登录密码"
+                                                           class="form-control" required>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                                        <button type="button" class="btn btn-primary" id="addcloudhost">保存</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row m-b-sm m-t-sm">
+                            <div class="col-md-1">
+                                <button type="button" id="loading-example-btn" class="btn btn-white btn-sm"><i class="fa fa-refresh"></i> 刷新</button>
+                            </div>
+                            <div class="col-md-11">
+                                <div class="input-group"><input type="text" id="filter" placeholder="搜索" class="form-control-sm form-control"> <span
+                                        class="input-group-btn">
+                                        <button type="button" class="btn btn-sm btn-primary"> 搜索</button> </span></div>
+                            </div>
+                        </div>
+
+                        <div class="project-list table-responsive">
+                            <table class="footable table table-hover table-stripped" data-page-size="8" data-filter=#filter  data-limit-navigation="5">
+                            {% if clust.project.project == 'admin' %}
+                                <thead>
+                                <tr>
+                                    <th data-sort-ignore="true"><input type="checkbox" class="i-checks checkall"></th>
+                                    <th>状态</th>
+                                    <th>设备</th>
+                                    <th>IP地址</th>
+                                    <th>系统</th>
+{#                                    <th data-hide="phone,tablet">操作</th>#}
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in host_list %}
+                                <tr class="hosts">
+                                    <td><input type="checkbox" class="i-checks" name="input[]"
+                                     hostid="{{ row.id }}" host="{{ row.host }}" ip="{{ row.ip }}" system="{{ row.system }}" port="{{ row.port }}">
+                                    </td>
+                                    <td class="project-status">
+                                        <span class="label status">{{ row.state }}</span>
+                                    </td>
+                                    <td class="project-title">
+                                        <a href="/cloud/vsphere-{{ row.host }}?cluster={{ row.cluster.cluster }}&tab=vm">{{ row.host }}</a>
+                                        <br/>
+                                        <small>创建 {{ row.ctime|date:'Y-m-d'}}</small>
+                                    </td>
+                                    <td class="project-ip">
+                                        <span>{{ row.ip }}</span>
+                                    </td>
+                                    <td class="project-system">
+                                        <span>{{ row.system }}</span>
+                                    </td>
+{#                                    <td class="project-actions">#}
+{#                                        <a href="http://{{ row.ip }}" target="blank" class="btn btn-white btn-sm"><i class="fa fa-internet-explorer"></i> Web </a>#}
+{#                                        <a href="telnet://{{ row.ip }}" class="btn btn-white btn-sm"><i class="fa fa-edit"></i> Telnet </a>#}
+{#                                        <a href="ssh2://{{ row.username }}@{{ row.ip }}:{{ row.port }}" class="btn btn-white btn-sm"><i class="fa fa-edit"></i> SSH </a>#}
+{#                                        <a data-toggle="modal" href="#edithost-form" class="btn btn-white btn-sm edithost"#}
+{#                                        hostid="{{ row.id }}" host="{{ row.host }}" ip="{{ row.ip }}" system="{{ row.system }}" port="{{ row.port }}">#}
+{#                                            <i class="fa fa-pencil"></i> 编辑 </a>#}
+{#                                        <a href="/hostdel-{{ row.host_cluster.cluster }}-{{ row.id }}" class="btn btn-white btn-sm"><i class="fa fa-times"></i> 删除 </a>#}
+{#                                    </td>#}
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            {% else %}
+                                <thead>
+                                <tr>
+                                    {% if loginuser.project.project == 'admin' %}
+                                    <th data-sort-ignore="true"><input type="checkbox" class="i-checks checkall"></th>
+                                    {% endif %}
+                                    <th>状态</th>
+                                    <th>设备</th>
+                                    {% if loginuser.project.project == 'admin' %}
+                                    <th>主设备</th>
+                                    {% endif %}
+                                    <th>系统</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in host_list %}
+                                <tr class="hosts">
+                                    {% if loginuser.project.project == 'admin' %}
+                                    <td><input type="checkbox" class="i-checks" name="input[]"
+                                         hostid="{{ row.id }}" host="{{ row.host }}" adminhost="{{ row.cloud_host.host }}">
+                                    </td>
+                                    {% endif %}
+                                    <td class="project-status">
+                                        <span class="label status">{{ row.cloud_host.state }}</span>
+                                    </td>
+                                    <td class="project-title">
+                                        <a href="/cloud/vsphere-{{ row.host }}?cluster={{ row.cluster.cluster }}&tab=vm">{{ row.host }}</a>
+                                        <br/>
+                                        <small>创建 {{ row.ctime|date:'Y-m-d'}}</small>
+                                    </td>
+                                    {% if loginuser.project.project == 'admin' %}
+                                    <td class="project-adminhost">
+                                        <span>{{ row.cloud_host.host }}</span>
+                                    </td>
+                                    {% endif %}
+                                    <td class="project-system">
+                                        <span>{{ row.cloud_host.system }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            {% endif %}
+                            <tfoot>
+                                <tr>
+                                    <td colspan="12">
+                                        <ul class="pagination float-right"></ul>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if clust.project.project == 'admin' %}
+    <div class="modal inmodal fade" id="edithost-form" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                            class="sr-only">{% trans 'Close' %}</span></button>
+{#                                        <i class="fa fa-laptop modal-icon"></i>#}
+                    <h4 class="modal-title">{% trans 'edit host' %}</h4>
+{#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+                </div>
+                <div class="modal-body">
+                    <form class="am-form" id="edithost_form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <input hidden id="editid" name="id" value="">
+                            <div class="form-group"><label>设备名</label>
+                            <input type="text" id="edithostname" name="host" minlength="2" maxlength="32" placeholder="输入设备"
+                                   class="form-control" required>
+                            </div>
+                            <div class="form-group"><label>IP地址</label>
+                            <input type="text" id="editip" name="ip" maxlength="16" placeholder="输入设备IP地址"
+                                   class="form-control" required>
+                            </div>
+                            <div class="form-group"><label>系统</label>
+                                <select class="form-control m-b" name="system" id="editsystem">
+                                    <option value="vSphere">vSphere</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>S端口</label>
+                            <input type="text" id="editport" name="port" value="443" maxlength="16" placeholder="输入设备端口"
+                                   class="form-control" required>
+                            </div>
+                            <div class="form-group"><label>登录账号</label>
+                            <input type="text" id="edituser" name="user" maxlength="32" placeholder="输入设备登录账号"
+                                   class="form-control">
+                            </div>
+                            <div class="form-group"><label>登录密码</label>
+                            <input type="password" id="editpwd" name="pwd" maxlength="32" placeholder="输入设备登录密码"
+                                   class="form-control">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="edithost">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif loginuser.project.project == 'admin' %}
+{#  编辑云设备#}
+    <div class="modal inmodal fade" id="editcloudhost-form" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                            class="sr-only">Close</span></button>
+{#                                        <i class="fa fa-laptop modal-icon"></i>#}
+                    <h4 class="modal-title">{%  trans 'edit cloudhost' %}</h4>
+{#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+                </div>
+                <div class="modal-body">
+                    <form class="am-form" id="editcloudhost_form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <input hidden id="editcloudid" name="id">
+                            <div class="form-group"><label>设备名</label>
+                            <input type="text" id="edithost" name="host" minlength="2" maxlength="32" placeholder="输入设备"
+                                   class="form-control" required>
+                            </div>
+                            <div class="form-group"><label>主设备</label>
+                                <select class="form-control m-b" id="editadminhost" name="adminhost">
+                                    {% for row in cloudadmin_host %}<option value="{{ row.host }}">{{ row.host }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group"><label>登录账号</label>
+                                <input type="text" id="editclouduser" name="user" maxlength="32" placeholder="输入设备登录账号"
+                                       class="form-control">
+                                </div>
+                                <div class="form-group"><label>登录密码</label>
+                                <input type="password" id="editcloudpwd" name="pwd" maxlength="32" placeholder="输入设备登录密码"
+                                       class="form-control">
+                                </div>
+                            </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="editcloudhost">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block js %}
+    <script src="/static/js/plugins/footable/footable.all.min.js"></script>
+    <!-- iCheck -->
+    <script src="/static/js/plugins/iCheck/icheck.min.js"></script>
+    <!-- Jquery Validate -->
+    <script src="/static/js/plugins/validate/jquery.validate.min.js"></script>
+    <script src="/static/js/plugins/validate/messages_zh.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.footable').footable();
+            $("#addcloudhost_form, #editcloudhost_form,#addhost_form, #edithost_form").validate();
+
+            $('#loading-example-btn').click(function () {
+                btn = $(this);
+                simpleLoad(btn, true);
+                location.reload();
+                // Ajax example
+//                $.ajax().always(function () {
+//                    simpleLoad($(this), false)
+//                });
+
+                simpleLoad(btn, false)
+            });
+
+            menuActive();
+            checkRadio();
+            hostCss();
+            addHost();
+            editHost();
+            delhost();
+            addCloudHost();
+            editCloudHost();
+            delcloudhost();
+            web();
+
+{#            $('#getexcel').click(function () {#}
+{#                var exceltime = $('#getexcel_form #exceltime select').val();#}
+{#                var datatype = $('#getexcel_form #datatype select').val();#}
+{#                window.open('/getfile?file=yuExcel&type=cluster&cluster={{ clust.cluster }}&time={0}&datatype={1}'.format(exceltime,datatype));#}
+{#            })#}
+        });
+        function menuActive() {
+            $('#cluster-menu, #cloud-menu').addClass('active');
+            $('#cluster-menu .nav-second-level').addClass('in').attr('aria-expanded','true');
+        }
+        function hostCss() {
+            var hosts = $('.hosts');
+            for (var i = 0; i <'{{ host_list }}'.length; i++) {
+                hostSate(hosts.eq(i));
+{#                hostWidth(hosts.eq(i));#}
+            }
+        }
+        function hostSate(host) {
+            var state = host.find('.status');
+            if(state.text()=='online'){ state.addClass('label-primary') }else { state.addClass('label-danger') }
+        }
+        function addHost() {
+            $('#addhost').click(function () {
+                if($("#addhost_form").valid()) {
+                    $.ajax({
+                        url: '/cloud/hostadd-{{ clust.id }}/',
+                        type: 'POST',
+                        data: $('#addhost_form').serialize(),
+                        dataType: 'JSON',
+                        traditionail: true,
+                        {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+                        success: function (obj) {
+                            if (obj.status) {
+                                location.reload();
+                            } else {
+                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                            }
+                        }
+                    })
+                }
+            });
+        }
+        function editHost() {
+            $('.edithost').click(function () {
+                var radio = $("input[name='input[]']:checked");
+                $('#edithost_form #editid').val(radio.attr('hostid'));
+                $('#edithost_form #edithostname').val(radio.attr('host'));
+                $('#edithost_form #editip').val(radio.attr('ip'));
+                $('#edithost_form #editsystem').val(radio.attr('system'));
+                $('#edithost_form #editport').val(radio.attr('port'));
+            });
+            $('#edithost').click(function () {
+                $.ajax({
+                    url: '/cloud/hostedit/',
+                    type: 'POST',
+                    data: $('#edithost_form').serialize(),
+                    dataType: 'JSON',
+                    traditionail: true,
+                    {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+                    success: function (obj) {
+                        if (obj.status) {
+                            location.reload();
+                        } else {
+                            yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                        }
+                    }
+                })
+            });
+        }
+        function delhost() {
+            $('.delhost').click(function () {
+                var hostid = [];
+                $("input[name='input[]']:checked").each(function () {
+                    hostid.push($(this).attr('hostid'));
+                });
+                $.ajax({
+                    url: '/cloud/hostdel/',
+                    type: 'POST',
+                    data: {'idlist':hostid},
+                    dataType: 'JSON',
+                    traditionail: true,
+                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},
+                    success: function (obj) {
+                        if (obj.status) {
+                            location.reload();
+                        } else {
+                            yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                        }
+                    }
+                })
+            });
+        }
+        function addCloudHost() {
+            $('#addcloudhost').click(function () {
+                if($("#addcloudhost_form").valid()) {
+                    $.ajax({
+                        url: '/cloud/cloudhostadd-{{ clust.id }}/',
+                        type: 'POST',
+                        data: $('#addcloudhost_form').serialize(),
+                        dataType: 'JSON',
+                        traditionail: true,
+                        {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+                        success: function (obj) {
+                            if (obj.status) {
+                                location.reload();
+                            } else {
+                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                            }
+                        }
+                    })
+                }
+            });
+        }
+        function editCloudHost() {
+            $('.editcloudhost').click(function () {
+                 var radio = $("input[name='input[]']:checked");
+                $('#editcloudhost_form #editcloudid').val(radio.attr('hostid'));
+                $('#editcloudhost_form #edithost').val(radio.attr('host'));
+                $('#editcloudhost_form #editadminhost').val(radio.attr('adminhost'));
+            });
+            $('#editcloudhost').click(function () {
+                if($("#editcloudhost_form").valid()) {
+                    $.ajax({
+                        url: '/cloud/cloudhostedit/',
+                        type: 'POST',
+                        data: $('#editcloudhost_form').serialize(),
+                        dataType: 'JSON',
+                        traditionail: true,
+                        {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+                        success: function (obj) {
+                            if (obj.status) {
+                                location.reload();
+                            } else {
+                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                            }
+                        }
+                    })
+                }
+            });
+        }
+        function delcloudhost() {
+            $('.delcloudhost').click(function () {
+                var cloudhostid = [];
+                $("input[name='input[]']:checked").each(function () {
+                    cloudhostid.push($(this).attr('hostid'));
+                });
+                $.ajax({
+                    url: '/cloud/cloudhostdel/',
+                    type: 'POST',
+                    data: {'idlist':cloudhostid},
+                    dataType: 'JSON',
+                    traditionail: true,
+                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},
+                    success: function (obj) {
+                        if (obj.status) {
+                            location.reload();
+                        } else {
+                            yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                        }
+                    }
+                })
+            });
+        }
+        function web() {
+            $('.web').click(function () {
+                $("input[name='input[]']:checked").each(function () {
+                    var ip = $(this).attr('ip');
+                    var port = $(this).attr('port');
+                    window.open('https://{0}:{1}'.format(ip, port), '_blank');
+                });
+            });
+        }
+    </script>
+{% endblock %}

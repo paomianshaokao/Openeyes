@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+{%  load i18n %}
+
+{% block title %}{{ oem.oemname }}管理系统 | 网络集群{% endblock %}
+
+{% block css %}
+    <link href="/static/css/plugins/footable/footable.core.css" rel="stylesheet">
+    <link href="/static/css/plugins/iCheck/custom.css" rel="stylesheet">
+{% endblock css %}
+
+{% block content %}
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-4">
+            <h2>云计算集群</h2>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/audits/home/">主页</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>云计算</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="wrapper wrapper-content animated fadeInUp">
+
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>分配给此账户的所有云计算集群</h5>
+                        <div class="ibox-tools">
+                            {% if loginuser.project.project == 'admin' %}
+                                <button data-toggle="modal" href="#addcluster-form" class="btn btn-primary btn-xs">{% trans 'create' %}</button>
+                                <button data-toggle="modal" href="#editcluster-form" class="btn btn-warning btn-xs editcluster">{% trans 'edit' %}</button>
+                                <button data-toggle="modal" class="btn btn-danger btn-xs delcluster">{% trans 'delete' %}</button>
+                            {% endif %}
+                        </div>
+                        {% if loginuser.project.project == 'admin' %}
+                            <div class="modal inmodal fade" id="addcluster-form" tabindex="-1" role="dialog" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                                                    class="sr-only">{% trans 'Close' %}</span></button>
+                                            {#                                        <i class="fa fa-laptop modal-icon"></i>#}
+                                            <h4 class="modal-title">创建集群</h4>
+                                            {#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+                                        </div>
+                                        <div class="modal-body">
+                                            <form class="am-form" id="addcluster_form">
+                                                {% csrf_token %}
+                                                <div class="form-group">
+                                                    <div class="form-group"><label>集群名</label>
+                                                        <input type="text" id="clu" name="clu" minlength="2" maxlength="32" placeholder="输入集群名"
+                                                               class="form-control" required>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group"><label>项目</label>
+                                                    <select class="form-control m-b" id="project" name="project">
+                                                        {% for user in project %}<option value="{{ user.project }}">{{ user.project }}</option>{% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="form-group"><label>最大设备数</label>
+                                                        <input type="text" id="hostnum" name="hostnum" placeholder="输入集群最大设备数" maxlength="16" value="0"
+                                                               class="form-control" required>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                                            <button type="button" class="btn btn-primary" id="addcluster">保存</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row m-b-sm m-t-sm">
+                            <div class="col-md-1">
+                                <button type="button" id="loading-example-btn" class="btn btn-white btn-sm"><i class="fa fa-refresh"></i> 刷新</button>
+                            </div>
+                            <div class="col-md-11">
+                                <div class="input-group"><input type="text" id="filter" placeholder="搜索" class="form-control-sm form-control"> <span
+                                        class="input-group-btn">
+                                        <button type="button" class="btn btn-sm btn-primary"> 搜索</button> </span></div>
+                            </div>
+                        </div>
+
+                        <div class="project-list table-responsive">
+                            <table class="footable table table-hover table-stripped" data-page-size="8" data-filter=#filter data-limit-navigation="5">
+                                <thead>
+                                <tr>
+                                    <th data-sort-ignore="true"><input type="checkbox" class="i-checks checkall"></th>
+                                    <th>状态</th>
+                                    <th>集群</th>
+                                    <th data-hide="phone,tablet">设备情况</th>
+                                    <th data-hide="phone,tablet">项目</th>
+                                    <th data-hide="phone,tablet">最大设备数</th>
+{#                                    {% if loginuser.user_project.project == 'admin' %}#}
+{#                                        <th data-hide="phone,tablet">操作</th>#}
+{#                                    {% endif %}#}
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in cluster_list %}
+                                    <tr class="cluster">
+                                        <td><input type="checkbox" class="i-checks" name="input[]"
+                                               clusterid="{{ row.id }}" cluster="{{ row.cluster }}" clustertype="{{ row.type }}"
+                                               project="{{ row.project.project }}" hostnum="{{ row.host_number }}">
+                                        </td>
+                                        <td class="project-status">
+                                            <span class="label label-primary">Active</span>
+                                        </td>
+                                        <td class="project-title">
+                                            <a href="/cloud/host-{{ row.cluster }}">{{ row.cluster }}</a>
+                                            <br/>
+                                            <small>创建 {{ row.ctime|date:'Y-m-d' }}</small>
+                                        </td>
+                                        <td class="project-completion">
+                                            <small class="onhost">{{ row.onhost }}</small>
+                                            <div class="progress progress-mini">
+                                                <div style="width:{{ row.onhost }}" class="progress-bar"></div>
+                                            </div>
+                                        </td>
+                                        <td class="project-project">
+                                            <span>{{ row.project.project }}</span>
+                                        </td>
+                                        <td class="project-hostnumber">
+                                            <span>{{ row.host_number }}</span>
+                                        </td>
+{#                                        {% if loginuser.user_project.project == 'admin' %}#}
+{#                                            <td class="project-actions">#}
+{#                                                <a data-toggle="modal" href="#editcluster-form" class="btn btn-white btn-sm editcluster"#}
+{#                                                   hostid="{{ row.id }}" cluster="{{ row.cluster }}"#}
+{#                                                   project="{{ row.cluster_project.project }}" hostnum="{{ row.host_number }}">#}
+{#                                                    <i class="fa fa-pencil"></i> 编辑 </a>#}
+{#                                                <a href="/clusterdel-{{ row.id }}?cluster={{ cluster }}&cluster_type={{ cluster_type }}"#}
+{#                                                   class="btn btn-white btn-sm"><i class="fa fa-times"></i> 删除 </a>#}
+{#                                            </td>#}
+{#                                        {% endif %}#}
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td colspan="12">
+                                        <ul class="pagination float-right"></ul>
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if loginuser.project.project == 'admin' %}
+        {#    编辑集群#}
+        <div class="modal inmodal fade" id="editcluster-form" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                                class="sr-only">{% trans 'Close' %}</span></button>
+                        {#                                        <i class="fa fa-laptop modal-icon"></i>#}
+                        <h4 class="modal-title">编辑集群</h4>
+                        {#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+                    </div>
+                    <div class="modal-body">
+                        <form class="am-form" id="editcluster_form">
+                            {% csrf_token %}
+                            <input hidden id="editid" name="id" required>
+                            <div class="form-group">
+                                <div class="form-group"><label>集群名</label>
+                                    <input type="text" id="editclu" name="clu" minlength="2" maxlength="32" placeholder="输入集群名"
+                                           class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-group"><label>项目</label>
+                                <select class="form-control m-b" id="editproject" name="project">
+                                    {% for user in project %}
+                                        <option value="{{ user.project }}">{{ user.project }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-group"><label>所有者最大设备数</label>
+                                    <input type="text" id="edithostnum" name="hostnum" placeholder="输入项目最大设备数" maxlength="16" value="0"
+                                           class="form-control" required>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" id="editcluster">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block js %}
+    <script src="/static/js/plugins/footable/footable.all.min.js"></script>
+    <!-- iCheck -->
+    <script src="/static/js/plugins/iCheck/icheck.min.js"></script>
+    <!-- Jquery Validate -->
+    <script src="/static/js/plugins/validate/jquery.validate.min.js"></script>
+    <script src="/static/js/plugins/validate/messages_zh.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.footable').footable();
+            $("#addcluster_form, #editcluster_form").validate();
+
+            $('#loading-example-btn').click(function () {
+                btn = $(this);
+                simpleLoad(btn, true);
+                location.reload();
+
+                // Ajax example
+//                $.ajax().always(function () {
+//                    simpleLoad($(this), false)
+//                });
+
+                simpleLoad(btn, false)
+            });
+
+            menuActive();
+            checkRadio();
+{#            clusterCss();#}
+            addcluster();
+            editcluster();
+            delcluster();
+
+        });
+        function menuActive() {
+            $('#cluster-menu, #cloud-menu').addClass('active');
+            $('#cluster-menu .nav-second-level').addClass('in').attr('aria-expanded', 'true');
+        }
+{#        function clusterCss() {#}
+{#            var cluster = $('.cluster');#}
+{#        }#}
+        function addcluster() {
+            $('#addcluster').click(function () {
+                if ($("#addcluster_form").valid()) {
+                    $.ajax({
+                        url: '/cloud/clusteradd/',
+                        type: 'POST',
+                        data: $('#addcluster_form').serialize(),
+                        dataType: 'JSON',
+                        traditionail: true,
+                        {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+                        success: function (obj) {
+                            if (obj.status) {
+                                location.reload();
+                            } else {
+                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                            }
+                        }
+                    })
+                }
+            });
+        }
+
+        function editcluster() {
+            $('.editcluster').click(function () {
+                var radio = $("input[name='input[]']:checked");
+                $('#editcluster_form #editid').val(radio.attr('clusterid'));
+                $('#editcluster_form #editclu').val(radio.attr('cluster'));
+                $('#editcluster_form #edittype').val(radio.attr('clustertype'));
+                $('#editcluster_form #editproject').val(radio.attr('project'));
+                $('#editcluster_form #edithostnum').val(radio.attr('hostnum'));
+            });
+            $('#editcluster').click(function () {
+                if ($("#editcluster_form").valid()) {
+                    $.ajax({
+                        url: '/cloud/clusteredit/',
+                        type: 'POST',
+                        data: $('#editcluster_form').serialize(),
+                        dataType: 'JSON',
+                        traditionail: true,
+{#                        headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+                        success: function (obj) {
+                            if (obj.status) {
+                                location.reload();
+                            } else {
+                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                            }
+                        }
+                    })
+                }
+            });
+        }
+        function delcluster() {
+            $('.delcluster').click(function () {
+                var clusterid = [];
+                $("input[name='input[]']:checked").each(function () {
+                    clusterid.push($(this).attr('clusterid'));
+                });
+                $.ajax({
+                    url: '/cloud/clusterdel/',
+                    type: 'POST',
+                    data: {'idlist':clusterid},
+                    dataType: 'JSON',
+                    traditionail: true,
+                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},
+                    success: function (obj) {
+                        if (obj.status) {
+                            location.reload();
+                        } else {
+                            yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                        }
+                    }
+                })
+            });
+        }
+    </script>
+{% endblock %}

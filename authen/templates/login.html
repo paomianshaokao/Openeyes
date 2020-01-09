@@ -1,0 +1,207 @@
+{%  load i18n %}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ oem.oemname }}管理系统 | 登陆</title>
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet">
+
+    <link href="/static/css/animate.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+
+    <!-- Toastr style -->
+    <link href="/static/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+
+    <div class="middle-box text-center loginscreen animated fadeInDown">
+        <div>
+            <div>
+
+                <h1 class="logo-name">{{ oem.logo }}</h1>
+
+            </div>
+            <h3>欢迎登陆{{ oem.oemname }}管理系统</h3>
+{#            <p>Perfectly designed and precisely prepared admin theme with over 50 pages with extra new web app views.#}
+                <!--Continually expanded and constantly improved Inspinia Admin Them (IN+)-->
+{#            </p>#}
+{#            <p>Login in. To see it in action.</p>#}
+{#            <p>Login in. To see it in action.</p>#}
+            <form class="m-t" role="form" action="/authen/login/" method="post" id="form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="text" id="username" name="user" class="form-control" placeholder="用户名" minlength="2" maxlength="32" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" name="pwd" class="form-control" placeholder="密码" minlength="3" maxlength="32"  required>
+                </div>
+                <button type="submit" class="btn btn-primary block full-width m-b">登录</button>
+{#                <a data-toggle="modal" href="#facelogin-form" id="facelogin" class="btn btn-warning block full-width m-b">人脸登录</a>#}
+
+
+{#                <a href="#"><small>忘记密码?</small></a>#}
+{#                <p class="text-muted text-center"><small>Do not have an account?</small></p>#}
+{#                <a class="btn btn-sm btn-white btn-block" href="register.html">Create an account</a>#}
+            </form>
+            <p class="m-t"> <small>{{ oem.company }} 版权所有.&copy; 2018-2019</small> </p>
+        </div>
+    </div>
+{#    <div class="modal inmodal fade" id="facelogin-form" tabindex="-1" role="dialog" aria-hidden="true">#}
+{#        <div class="modal-dialog">#}
+{#            <div class="modal-content">#}
+{#                <div class="modal-header">#}
+{#                    <button type="button" class="close face-close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span#}
+{#                            class="sr-only">Close</span></button>#}
+                    {#                                        <i class="fa fa-laptop modal-icon"></i>#}
+{#                    <h4 class="modal-title">人脸识别</h4>#}
+                    {#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+{#                </div>#}
+{#                <div class="modal-body">#}
+{#                    <form class="am-form" id="facelogin_form">#}
+{#                        {% csrf_token %}#}
+{#                        <div class="form-group">#}
+{#                            <div class="form-group">#}
+{#                                <!--video用于显示媒体设备的视频流，自动播放-->#}
+{#                                <video class="am-img-thumbnail am-center am-round" id="video" muted autoplay style="width: 480px;height: 320px" ></video>#}
+{#                                <!--描绘video截图-->#}
+{#                                <canvas hidden class="am-hide" id="canvas" width="480" height="320"></canvas>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </form>#}
+{#                </div>#}
+{#                <div class="modal-footer">#}
+{#                    <button type="button" class="btn btn-white face-close" data-dismiss="modal">关闭</button>#}
+{#                    <button type="button" class="btn btn-primary" id="loginface">保存</button>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+
+    <!-- Mainly scripts -->
+    <script src="/static/js/jquery-3.1.1.min.js"></script>
+    <script src="/static/js/jquery.cookie.min.js"></script>
+    <script src="/static/js/popper.min.js"></script>
+    <script src="/static/js/bootstrap.js"></script>
+    <!-- Jquery Validate -->
+    <script src="/static/js/plugins/validate/jquery.validate.min.js"></script>
+    <script src="/static/js/plugins/validate/messages_zh.min.js"></script>
+    <!-- Toastr -->
+    <script src="/static/js/plugins/toastr/toastr.min.js"></script>
+    <script>
+        openAlert();
+{#        facelogin();#}
+        $("#form").validate();
+        function yuAlert(state, head, body, show) {
+            var show = arguments[3] ? arguments[3] : 'slideDown';
+            setTimeout(function () {
+                toastr.options = {
+                    closeButton: true,
+                    progressBar: true,
+                    showMethod: show,
+                    timeOut: 4000
+                };
+                if(state=='success') toastr.success(body, head);
+                else if(state=='warning') toastr.warning(body, head);
+                else if(state=='info') toastr.info(body, head);
+                else toastr.error(body, head);
+    {#        }, 1300);#}
+            }, 500);
+        }
+        function openAlert() {
+            var alert = {{ alert|safe }};
+            for(var a=0; a<alert.length; a++){
+                yuAlert(alert[a].state , alert[a].head, alert[a].body, alert[a].show)
+            }
+        }
+{#        function facelogin() {#}
+{#            $('#facelogin').click(function () {#}
+{#                var video = document.getElementById('video');#}
+{#                var canvas = document.getElementById('canvas');#}
+{#                var capture = document.getElementById('loginface');#}
+{#                var context = canvas.getContext('2d');#}
+                {#            var close = document.getElementById('face-close');#}
+{#                var close = $(".face-close");#}
+{##}
+{#                function getUserMediaToPhoto(constraints, success, error) {#}
+{#                    if (navigator.mediaDevices.getUserMedia) {#}
+{#                        //最新标准API#}
+{#                        navigator.mediaDevices.getUserMedia(constraints).then(success).catch(error);#}
+{#                    } else if (navigator.webkitGetUserMedia) {#}
+{#                        //webkit核心浏览器#}
+{#                        navigator.webkitGetUserMedia(constraints, success, error);#}
+{#                    } else if (navigator.mozGetUserMedia) {#}
+{#                        //firefox浏览器#}
+{#                        navigator.mozGetUserMedia(constraints, success, error);#}
+{#                    } else if (navigator.getUserMedia) {#}
+{#                        //旧版API#}
+{#                        navigator.getUserMedia(constraints, success, error);#}
+{#                    }#}
+{#                }#}
+{##}
+{#                //成功回调函数#}
+{#                function success(stream) {#}
+{#                    mediaStreamTrack = stream.getTracks()[0];#}
+{#                    //兼容webkit核心浏览器#}
+{#                    var CompatibleURL = window.URL || window.webkitURL;#}
+{#                    //将视频流转化为video的源#}
+{#                    try {#}
+{#                        video.src = CompatibleURL.createObjectURL(stream);#}
+{#                    } catch (e) {#}
+{#                        video.srcObject = stream;#}
+{#                    }#}
+{#                    video.play();//播放视频#}
+{#                    // 关闭摄像头#}
+{#                    close.click(function (){#}
+{#                        mediaStreamTrack && mediaStreamTrack.stop();#}
+{#                    });#}
+{#                }#}
+{##}
+{#                function error(error) {#}
+{#                    console.log('访问用户媒体失败：', error.name, error.message);#}
+{#                }#}
+{##}
+{#                function uploadPhoto(imgData) {#}
+{#                    yuAlert('info', '您好', '正在处理面部数据，请稍后');#}
+{#                    var base64Data = imgData.substr(22);#}
+{#                    $.ajax({#}
+{#                        url: '/face-id/',#}
+{#                        type: 'POST',#}
+{#                        data: {'mode': 'loginface', 'face': base64Data},#}
+{#                        dataType: 'JSON',#}
+{#                        traditionail: true,#}
+{#                        headers: {"Content-type": "application/x-www-form-urlencoded", 'X-CSRFtoken': $.cookie('csrftoken')},#}
+{#                        success: function (obj) {#}
+{#                            if (obj.status) {#}
+{#                                window.location.replace("/admin-home");#}
+{#                            } else {#}
+{#                                yuAlert('error', '您好', obj.error);#}
+{#                            }#}
+{#                        }#}
+{#                    })#}
+{#                }#}
+{##}
+{#                if (navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.getUserMedia) {#}
+{#                    getUserMediaToPhoto({video: {width: 480, height: 320}}, success, error);#}
+{#                } else {#}
+{#                    yuAlert('error', '您好', '你的浏览器不支持访问用户媒体设备');#}
+{#                }#}
+{#                capture.addEventListener('click', function () {#}
+{#                    // 将video画面描绘在canvas画布上#}
+{#                    context.drawImage(video, 0, 0, 480, 320);#}
+{#                    var imgData = canvas.toDataURL();#}
+{#                    uploadPhoto(imgData);#}
+{#                });#}
+{#            });#}
+{#        }#}
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,499 @@
+{% extends 'base.html' %}
+{%  load i18n %}
+
+{% block title %}{{ oem.oemname }}管理系统 | 账号管理{% endblock %}
+
+{% block css %}
+    <link href="/static/css/plugins/footable/footable.core.css" rel="stylesheet">
+    <link href="/static/css/plugins/iCheck/custom.css" rel="stylesheet">
+{% endblock css %}
+
+{% block content %}
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-4">
+            <h2>账号管理</h2>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/audits/home/">主页</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>账号管理</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="wrapper wrapper-content animated fadeInUp">
+
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>分配给此账户的所有可管理账号</h5>
+                        <div class="ibox-tools">
+{#                            <a data-toggle="modal" href="#adduser-form" class="btn btn-primary btn-xs">创建新账号</a>#}
+                            <button data-toggle="modal" href="#adduser-form" class="btn btn-primary btn-xs">{% trans 'create' %}</button>
+                            <button data-toggle="modal" href="#edituser-form" class="btn btn-warning btn-xs edituser">{% trans 'edit' %}</button>
+                            <button data-toggle="modal" class="btn btn-danger btn-xs deluser">{% trans 'delete' %}</button>
+                        </div>
+                        <div class="modal inmodal fade" id="adduser-form" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                                                class="sr-only">{% trans 'Close' %}</span></button>
+{#                                        <i class="fa fa-laptop modal-icon"></i>#}
+                                        <h4 class="modal-title">{% trans 'create user' %}</h4>
+{#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+                                    </div>
+                                    <div class="modal-body">
+                                        <form class="am-form" id="adduser_form">
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                <div class="form-group"><label>账号</label>
+                                                <input type="text" id="user" name="user" minlength="2" maxlength="32" placeholder="输入账号名"
+                                                       class="form-control" required>
+                                                </div>
+                                                <div class="form-group"><label>邮箱</label>
+                                                <input type="email" id="email" name="email" placeholder="输入邮箱"
+                                                       class="form-control">
+                                                </div>
+                                                <div class="form-group"><label>密码</label>
+                                                <input type="password" id="pwd1" name="pwd1" minlength="3" maxlength="32" placeholder="输入密码"
+                                                       class="form-control">
+                                                </div>
+                                                <div class="form-group"><label>确认密码</label>
+                                                <input type="password" id="pwd2" name="pwd2" minlength="3" maxlength="32" placeholder="输入确认密码"
+                                                       class="form-control">
+                                                </div>
+                                                <div class="form-group"><label>角色</label>
+                                                    <select class="form-control m-b" name="group">
+                                                        <option value="admin" class="">admin</option>
+{#                                                        <option value="user" class="">user</option>#}
+                                                    </select>
+                                                </div>
+                                                {% if loginuser.project.project == 'admin' %}
+                                                <div class="form-group project-group"><label>项目</label>
+                                                    <select class="form-control m-b" name="project">
+                                                        {% for row in project %}
+                                                            <option value="{{ row.project }}" class="">{{ row.project }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                                        <button type="button" class="btn btn-primary" id="adduser">保存</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row m-b-sm m-t-sm">
+                            <div class="col-md-1">
+                                <button type="button" id="loading-example-btn" class="btn btn-white btn-sm"><i class="fa fa-refresh"></i> 刷新</button>
+                            </div>
+                            <div class="col-md-11">
+                                <div class="input-group"><input type="text" id="filter" placeholder="搜索" class="form-control-sm form-control"> <span
+                                        class="input-group-btn">
+                                        <button type="button" class="btn btn-sm btn-primary"> 搜索</button> </span></div>
+                            </div>
+                        </div>
+
+                        <div class="project-list table-responsive">
+                            <table class="footable table table-hover table-stripped user-table" data-page-size="8" data-filter=#filter data-limit-navigation="5">
+                                <thead>
+                                <tr>
+                                    <th data-sort-ignore="true"><input type="checkbox" class="i-checks checkall"></th>
+                                    <th data-hide="phone,tablet">状态</th>
+                                    <th>头像</th>
+                                    <th>账号</th>
+                                    <th data-hide="phone,tablet">邮箱</th>
+                                    <th data-hide="phone,tablet">角色</th>
+                                    {% if loginuser.project.project == 'admin' %}
+                                    <th data-hide="phone,tablet">项目</th>
+                                    {% endif %}
+{#                                    <th data-hide="phone,tablet">告警</th>#}
+{#                                    <th data-hide="phone,tablet">人脸识别</th>#}
+{#                                    <th data-hide="phone,tablet" class="thead-actions">操作</th>#}
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in user_list %}
+                                    <tr class="users">
+                                        <td><input type="checkbox" class="i-checks" name="input[]" userid="{{ row.id }}"  user="{{ row.username }}" email="{{ row.email }}"
+                                                   group="{{ row.group.caption }}" {% if loginuser.project.project == 'admin' %} project="{{ row.project.project }}"{% endif %} >
+                                        </td>
+                                        <td class="project-state">
+{#                                            <a href="/userstate-{{ row.username }}/"><span class="label user_state">{{ row.state }}</span></a>#}
+                                            <span class="label user_state">{{ row.state }}</span>
+                                        </td>
+                                        <td class="project-icon">
+                                            <img alt="image" class="rounded-circle img-sm"
+                                                 src="/static/img/user/{% if row.project.project == 'admin' %}admin{% else %}user{% endif %}.jpg">
+                                        </td>
+                                        <td class="project-title">
+                                            <span>{{ row.username }}</span>
+                                            <br/>
+                                            <small>创建 {{ row.ctime|date:'Y-m-d' }}</small>
+                                        </td>
+                                        <td class="project-email">
+                                            <span>{{ row.email }}</span>
+                                        </td>
+                                        <td class="project-group">
+                                            <span>{{ row.group.caption }}</span>
+                                        </td>
+                                        {% if loginuser.project.project == 'admin' %}
+                                        <td class="project-profile">
+                                            <span>{{ row.project.project }}</span>
+                                        </td>
+                                        {% endif %}
+{#                                        <td class="project-alarm">#}
+{#                                            <a href="/useralarm-{{ row.username }}/"><span class="label user_alarm">{{ row.alarm }}</span></a>#}
+{#                                        </td>#}
+{#                                        <td class="project-face">#}
+{#                                            <a data-toggle="modal" href="#face-form"  user="{{ row.username }}" class="user_face"><span class="label user_facelable">{{ row.face }}</span></a>#}
+{#                                        </td>#}
+{#                                        <td class="project-actions">#}
+{#                                            <a data-toggle="modal" href="#edituser-form" class="btn btn-white btn-sm edituser"#}
+{#                                            userid="{{ row.id }}"  user="{{ row.username }}" email="{{ row.email }}" group="{{ row.user_group.caption }}">#}
+{#                                                <i class="fa fa-pencil"></i> 编辑 </a>#}
+{#                                            <a class="btn btn-white btn-sm delface"#}
+{#                                               user="{{ row.username }}"><i class="fa fa-times"></i> 删除人脸 </a>#}
+{#                                            <a href="/userdel-{{ row.id }}" class="btn btn-white btn-sm"><i class="fa fa-times"></i> 删除用户 </a>#}
+{#                                        </td>#}
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td colspan="12">
+                                        <ul class="pagination float-right"></ul>
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {#    编辑账号#}
+    <div class="modal inmodal fade" id="edituser-form" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                            class="sr-only">{% trans 'Close' %}</span></button>
+{#                                        <i class="fa fa-laptop modal-icon"></i>#}
+                    <h4 class="modal-title">编辑账号</h4>
+{#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+                </div>
+                <div class="modal-body">
+                    <form class="am-form" id="edituser_form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <input hidden id="editid" name="id">
+                            <div class="form-group"><label>账号</label>
+                            <input type="text" id="editusername" name="user" minlength="2" maxlength="32" placeholder="输入账号名"
+                                   class="form-control" required>
+                            </div>
+                            <div class="form-group"><label>邮箱</label>
+                            <input type="email" id="editemail" name="email" placeholder="输入邮箱"
+                                   class="form-control">
+                            </div>
+                            <div class="form-group"><label>新密码</label>
+                            <input type="password" id="editpwd1" name="pwd1" minlength="3" maxlength="32" placeholder="输入密码"
+                                   class="form-control">
+                            </div>
+                            <div class="form-group"><label>确认新密码</label>
+                            <input type="password" id="editpwd2" name="pwd2" minlength="3" maxlength="32" placeholder="输入确认密码"
+                                   class="form-control">
+                            </div>
+                            <div class="form-group editgroup-form"><label>角色</label>
+                                <select class="form-control m-b" id="editgroup" name="group">
+                                    <option value="admin" class="">admin</option>
+{#                                    <option value="user" class="" id="groupuser">user</option>#}
+                                </select>
+                            </div>
+                            {% if loginuser.project.project == 'admin' %}
+                            <div class="form-group project-group editproject-form"><label>项目</label>
+                                <select class="form-control m-b" id="editproject" name="project">
+                                    {% for row in project %}<option value="{{ row.project }}" class="">{{ row.project }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="edituser">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{#    <div class="modal inmodal fade" id="face-form" tabindex="-1" role="dialog" aria-hidden="true">#}
+{#        <div class="modal-dialog">#}
+{#            <div class="modal-content">#}
+{#                <div class="modal-header">#}
+{#                    <button type="button" class="close face-close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span#}
+{#                            class="sr-only">Close</span></button>#}
+                    {#                                        <i class="fa fa-laptop modal-icon"></i>#}
+{#                    <h4 class="modal-title">录入人脸</h4>#}
+                    {#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+{#                </div>#}
+{#                <div class="modal-body">#}
+{#                    <form class="am-form" id="face_form">#}
+{#                        {% csrf_token %}#}
+{#                        <div class="form-group">#}
+{#                            <div class="form-group" id="face">#}
+{#                                <!--video用于显示媒体设备的视频流，自动播放-->#}
+{#                                <video class="am-img-thumbnail am-center am-round" id="video" muted autoplay style="width: 480px;height: 320px" ></video>#}
+{#                                <!--描绘video截图-->#}
+{#                                <canvas hidden class="am-hide" id="canvas" width="480" height="320"></canvas>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </form>#}
+{#                </div>#}
+{#                <div class="modal-footer">#}
+{#                    <button type="button" class="btn btn-white face-close" data-dismiss="modal">关闭</button>#}
+{#                    <button type="button" class="btn btn-primary" id="addface">保存</button>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{% endblock %}
+
+{% block js %}
+    <script src="/static/js/plugins/footable/footable.all.min.js"></script>
+    <!-- iCheck -->
+    <script src="/static/js/plugins/iCheck/icheck.min.js"></script>
+    <!-- Jquery Validate -->
+    <script src="/static/js/plugins/validate/jquery.validate.min.js"></script>
+    <script src="/static/js/plugins/validate/messages_zh.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.footable').footable();
+            $("#adduser_form,#edituser_form").validate({});
+
+            $('#loading-example-btn').click(function () {
+                btn = $(this);
+                simpleLoad(btn, true);
+                location.reload();
+
+                // Ajax example
+//                $.ajax().always(function () {
+//                    simpleLoad($(this), false)
+//                });
+
+                simpleLoad(btn, false)
+            });
+            menuActive();
+            checkRadio();
+            userCss();
+            addUser();
+            editUser();
+            delUser();
+{#            face();#}
+        });
+        function menuActive() {
+            $('#users-menu').addClass('active');
+        }
+        function userCss() {
+            var users = $('.users');
+            for (var i = 0; i <'{{ user_list }}'.length; i++) {
+                userSate(users.eq(i));
+            }
+        }
+        function userSate(user) {
+            var state = user.find('.user_state');
+{#            var alarm = user.find('.user_alarm');#}
+{#            var face = user.find('.user_facelable');#}
+            if(state.text()=='Active'){ state.addClass('label-primary') }else { state.addClass('label-warning') }
+{#            if(alarm.text()=='已启用'){ alarm.addClass('label-primary') }else { alarm.addClass('label-warning') }#}
+{#            if(face.text()=='已录入'){ face.addClass('label-primary') }else { face.addClass('label-warning') }#}
+        }
+        function addUser() {
+            $('#adduser').click(function () {
+                if($("#adduser_form").valid()) {
+                    $.ajax({
+                        url: '/authen/useradd/',
+                        type: 'POST',
+                        data: $('#adduser_form').serialize(),
+                        dataType: 'JSON',
+                        traditionail: true,
+                        {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+                        success: function (obj) {
+                            if (obj.status) {
+                                location.reload();
+                            } else {
+                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                            }
+                        }
+                    })
+                }
+            });
+        }
+        function editUser() {
+            $('.edituser').click(function () {
+                var radio = $("input[name='input[]']:checked");
+                $('#edituser_form #editid').val(radio.attr('userid'));
+                $('#edituser_form #editusername').val(radio.attr('user'));
+                $('#edituser_form #editemail').val(radio.attr('email'));
+                $('#edituser_form #editgroup').val(radio.attr('group'));
+                $('#edituser_form #editproject').val(radio.attr('project'));
+                if(radio.attr('user')=='admin') {    {# 如果用户是admin用户名不能被编辑，且只能作为admin用户组，和作为admin项目，所以直接隐藏掉 #}
+                    $('#editusername').attr('readonly','readonly');
+                    $('#edituser_form .editgroup-form').hide();
+                    $('#edituser_form .editproject-form').hide();
+                }else{
+                    $('#edituser_form .editgroup-form').show();
+                    $('#edituser_form .editproject-form').show();
+                }
+            });
+            $('#edituser').click(function () {
+                if($("#edituser_form").valid()) {
+                    $.ajax({
+                        url: '/authen/useredit/',
+                        type: 'POST',
+                        data: $('#edituser_form').serialize(),
+                        dataType: 'JSON',
+                        traditionail: true,
+                        {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+                        success: function (obj) {
+                            if (obj.status) {
+                                location.reload();
+                            } else {
+                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                            }
+                        }
+                    })
+                }
+            });
+        }
+        function delUser() {
+            $('.deluser').click(function () {
+                var userid = [];
+                $("input[name='input[]']:checked").each(function () {
+                    if($(this).attr('user')!='admin') { {# 删除的用户不能是admin #}
+                        userid.push($(this).attr('userid'))
+                    }
+                });
+                $.ajax({
+                    url: '/authen/userdel/',
+                    type: 'POST',
+                    data: {'idlist':userid},
+                    dataType: 'JSON',
+                    traditionail: true,
+                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},
+                    success: function (obj) {
+                        if (obj.status) {
+                            location.reload();
+                        } else {
+                            yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                        }
+                    }
+                })
+            });
+        }
+{#        function face() {#}
+{#            $('.user_face').click(function (){#}
+{#                var user = $(this).attr('user');#}
+{#                var video = document.getElementById('video');#}
+{#                var canvas = document.getElementById('canvas');#}
+{#                var capture = document.getElementById('addface');#}
+{#                var context = canvas.getContext('2d');#}
+{#                var close = $(".face-close");#}
+{#                function getUserMediaToPhoto(constraints, success, error) {#}
+{#                    if (navigator.mediaDevices.getUserMedia) {#}
+{#                        //最新标准API#}
+{#                        navigator.mediaDevices.getUserMedia(constraints).then(success).catch(error);#}
+{#                    } else if (navigator.webkitGetUserMedia) {#}
+{#                        //webkit核心浏览器#}
+{#                        navigator.webkitGetUserMedia(constraints, success, error);#}
+{#                    } else if (navigator.mozGetUserMedia) {#}
+{#                        //firefox浏览器#}
+{#                        navigator.mozGetUserMedia(constraints, success, error);#}
+{#                    } else if (navigator.getUserMedia) {#}
+{#                        //旧版API#}
+{#                        navigator.getUserMedia(constraints, success, error);#}
+{#                    }#}
+{#                }#}
+{#                //成功回调函数#}
+{#                function success(stream) {#}
+{#                    mediaStreamTrack = stream.getTracks()[0];#}
+{#                    //兼容webkit核心浏览器#}
+{#                    var CompatibleURL = window.URL || window.webkitURL;#}
+{#                    //将视频流转化为video的源#}
+{#                    try {#}
+{#                        video.src = CompatibleURL.createObjectURL(stream);#}
+{#                    } catch (e) {#}
+{#                        video.srcObject = stream;#}
+{#                    }#}
+{#                    video.play();//播放视频#}
+{#                    // 关闭摄像头#}
+{#                    close.click(function (){#}
+{#                        mediaStreamTrack && mediaStreamTrack.stop();#}
+{#                    });#}
+{#                }#}
+{#                function error(error) {#}
+{#                    console.log('访问用户媒体失败：', error.name, error.message);#}
+{#                }#}
+{#                function uploadPhoto(imgData){#}
+{#                    yuAlert('info', '您好 {{ loginuser.username }}', '正在处理面部数据，如已录入面部之前的数据将会被覆盖');#}
+{#                    var base64Data = imgData.substr(22);#}
+{#                    $.ajax({#}
+{#                        url: '/face-id/',#}
+{#                        type: 'POST',#}
+{#                        data: { 'mode': 'addface', 'user': user, 'face': base64Data},#}
+{#                        dataType: 'JSON',#}
+{#                        traditionail: true,#}
+{#                        headers: {"Content-type": "application/x-www-form-urlencoded" ,'X-CSRFtoken': $.cookie('csrftoken')},#}
+{#                        success: function (obj) {#}
+{#                            if (obj.status) {#}
+{#                                location.reload();#}
+{#                            } else {#}
+{#                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);#}
+{#                            }#}
+{#                        }#}
+{#                    })#}
+{#                }#}
+{#                if (navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.getUserMedia) {#}
+{#                    getUserMediaToPhoto({video: {width: 480, height: 320}}, success, error);#}
+{#                } else {#}
+{#                    yuAlert('error', '您好', '你的浏览器不支持访问用户媒体设备');#}
+{#                }#}
+{#                capture.addEventListener('click', function () {#}
+{#                    // 将video画面描绘在canvas画布上#}
+{#                    context.drawImage(video, 0, 0, 480, 320);#}
+{#                    var imgData = canvas.toDataURL();#}
+{#                    uploadPhoto(imgData);#}
+{#                });#}
+{#            });#}
+{#            $('.delface').click(function (){#}
+{#                var user = $(this).attr('user');#}
+{#                $.ajax({#}
+{#                    url: '/face-id/',#}
+{#                    type: 'POST',#}
+{#                    data: { 'mode': 'delface', 'user': user},#}
+{#                    dataType: 'JSON',#}
+{#                    traditionail: true,#}
+{#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+{#                    success: function (obj) {#}
+{#                        if (obj.status) {#}
+{#                            location.reload();#}
+{#                        } else {#}
+{#                            yuAlert('error', '您好 {{ loginuser.username }}', obj.error);#}
+{#                        }#}
+{#                    }#}
+{#                })#}
+{#            });#}
+{#        }#}
+    </script>
+{% endblock %}

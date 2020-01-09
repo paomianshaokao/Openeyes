@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+{%  load i18n %}
+
+{% block title %}{{ oem.oemname }}管理系统 | {{ host.host }}{% endblock %}
+
+{% block css %}
+    <link href="/static/css/plugins/footable/footable.core.css" rel="stylesheet">
+    <link href="/static/css/plugins/iCheck/custom.css" rel="stylesheet">
+{% endblock css %}
+
+{% block content %}
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-4">
+            <h2>{{ host.host }}</h2>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/audits/home/">主页</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/cloud/cluster/">云计算</a>
+                </li>
+                <li class="breadcrumb-item">
+                    {% if cluster.project.project == 'admin' %}
+                    <a href="/cloud/host-{{ host.cluster.cluster }}">{{ host.cluster.cluster }}集群</a>
+                    {% else %}
+                    <a href="/cloud/host-{{ cloudhost.cluster.cluster }}">{{ cloudhost.cluster.cluster }}集群</a>
+                    {% endif %}
+                </li>
+                <li class="breadcrumb-item active">
+                    {% if cluster.project.project == 'admin' %}
+                    <strong>{{ host.host }}</strong>
+                    {% else %}
+                    <strong>{{ cloudhost.host }}</strong>
+                    {% endif %}
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="wrapper wrapper-content animated fadeInUp">
+
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>分配给此账户的所有{{ host.host }}的虚拟机</h5>
+                        <div class="ibox-tools">
+                        {% if loginuser.project.project == 'admin'%}    {#  如果登录账号为admin项目的管理员，可以分派虚拟机 #}
+                            <button data-toggle="modal" class="btn btn-primary btn-xs vm_manager" name="allocation"><span class="fa fa-share"></span> {% trans 'allocation' %}</button>
+                        {% endif %}
+                        {% if cluster.project.project == 'admin' %}     {#  如果是主设备 #}
+                            <button data-toggle="modal"
+{#                                    href="/cloud/vsphere-{{ host.host }}?cluster={{ host.cluster.cluster }}&tab=console&uuid={{ row.uuid }}&vm={{ row.vm }}" target="_blank"#}
+                                    class="btn btn-info btn-xs console"><span class="fa fa-youtube-play"></span> {% trans 'console' %}</button>
+                        {% else %}  {#  如果是云设备 #}
+{#                            {% if loginuser.project.project == 'admin'%}    {#  如果是云设备,且登录账号为admin项目的管理员，可以分派虚拟机 #}
+{#                                <button data-toggle="modal" class="btn btn-primary btn-xs vm_manager" name="allocation"><span class="fa fa-share"></span> {% trans 'allocation' %}</button>#}
+{#                            {% endif %}#}
+                            <button data-toggle="modal"
+{#                                    href="/cloud/vsphere-{{ cloudhost.host }}?cluster={{ cloudhost.cluster.cluster }}&tab=console&uuid={{ row.uuid }}&vm={{ row.vm }}" target="_blank"#}
+                                    class="btn btn-info btn-xs console"><span class="fa fa-youtube-play"></span> {% trans 'console' %}</button>
+                        {% endif %}
+                            <span> | </span>
+                            <button data-toggle="modal" class="btn btn-primary btn-xs vm_manager" name="poweron">
+                                <span class="fa fa-play"></span> {% trans 'poweron' %}</button>
+                            <button data-toggle="modal" class="btn btn-danger btn-xs vm_manager" name="poweroff">
+                                <span class="fa fa-stop"></span> {% trans 'poweroff' %}</button>
+                            <button data-toggle="modal" class="btn btn-warning btn-xs vm_manager" name="suspend">
+                                <span class="fa fa-pause"></span> {% trans 'suspend' %}</button>
+                            <button data-toggle="modal" class="btn btn-danger btn-xs vm_manager" name="reboot">
+                                <span class="fa fa-refresh"></span> {% trans 'reboot' %}</button>
+                            <button data-toggle="modal" class="btn btn-info btn-xs vm_manager" name="softreboot">
+                                <span class="fa fa-refresh"></span> {% trans 'softreboot' %}</button>
+                        </div>
+{#                        <div class="modal inmodal fade" id="getexcel-form" tabindex="-1" role="dialog" aria-hidden="true">#}
+{#                            <div class="modal-dialog">#}
+{#                                <div class="modal-content">#}
+{#                                    <div class="modal-header">#}
+{#                                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span#}
+{#                                                class="sr-only">Close</span></button>#}
+{#                                        <i class="fa fa-laptop modal-icon"></i>#}
+{#                                        <h4 class="modal-title">导出Excel</h4>#}
+{#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+{#                                    </div>#}
+{#                                    <div class="modal-body">#}
+{#                                        <form class="am-form" id="getexcel_form">#}
+{#                                            {% csrf_token %}#}
+{#                                            <div class="form-group">#}
+{#                                                <div class="form-group" id="exceltime"><label>时间</label>#}
+{#                                                    <select class="form-control m-b">#}
+{#                                                        <option value="day">今天</option>#}
+{#                                                        <option value="week">本周</option>#}
+{#                                                        <option value="month">本月</option>#}
+{#                                                    </select>#}
+{#                                                </div>#}
+{#                                                <div class="form-group" id="datatype"><label>数据</label>#}
+{#                                                    <select class="form-control m-b">#}
+{#                                                        <option value="day">每天</option>#}
+{#                                                        <option class="hour" value="hour">每小时</option>#}
+{#                                                    </select>#}
+{#                                                </div>#}
+{#                                            </div>#}
+{#                                        </form>#}
+{#                                    </div>#}
+{#                                    <div class="modal-footer">#}
+{#                                        <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>#}
+{#                                        <button type="button" class="btn btn-primary" id="getexcel">导出</button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="modal inmodal fade" id="addhost-form" tabindex="-1" role="dialog" aria-hidden="true">#}
+{#                            <div class="modal-dialog">#}
+{#                                <div class="modal-content">#}
+{#                                    <div class="modal-header">#}
+{#                                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span#}
+{#                                                class="sr-only">Close</span></button>#}
+{#                                        <i class="fa fa-laptop modal-icon"></i>#}
+{#                                        <h4 class="modal-title">创建设备</h4>#}
+{#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+{#                                    </div>#}
+{#                                    <div class="modal-body">#}
+{#                                        <form class="am-form" id="addhost_form">#}
+{#                                            {% csrf_token %}#}
+{#                                            <div class="form-group">#}
+{#                                                <div class="form-group"><label>设备名</label>#}
+{#                                                <input type="text" id="host" name="host" minlength="2" maxlength="32" placeholder="输入设备"#}
+{#                                                       class="form-control" required>#}
+{#                                                </div>#}
+{#                                                <div class="form-group"><label>IP地址</label>#}
+{#                                                <input type="text" id="ip" name="ip" maxlength="16" placeholder="输入设备IP地址"#}
+{#                                                       class="form-control" required>#}
+{#                                                </div>#}
+{#                                                <div class="form-group"><label>系统</label>#}
+{#                                                    <select class="form-control m-b" name="system">#}
+{#                                                        <option value="YuOS_Firewall">YuOS_Firewall</option>#}
+{#                                                        <option value="Cisco">Cisco</option>#}
+{#                                                        <option value="Cisco_Router">Cisco_Router</option>#}
+{#                                                        <option value="Huawei">Huawei</option>#}
+{#                                                        <option value="H3C">H3C</option>#}
+{#                                                        <option value="Getck_Firewall_GF6000">Getck_Firewall_GF6000</option>#}
+{#                                                    </select>#}
+{#                                                </div>#}
+{#                                                <div class="form-group"><label>SSH端口</label>#}
+{#                                                <input type="text" id="port" name="port" value="22" maxlength="16" placeholder="输入设备SSH端口"#}
+{#                                                       class="form-control" required>#}
+{#                                                </div>#}
+{#                                                <div class="form-group"><label>登录账号</label>#}
+{#                                                <input type="text" id="user" name="user" maxlength="32" placeholder="输入设备登录账号"#}
+{#                                                       class="form-control" required>#}
+{#                                                </div>#}
+{#                                                <div class="form-group"><label>登录密码</label>#}
+{#                                                <input type="password" id="pwd" name="pwd" maxlength="32" placeholder="输入设备登录密码"#}
+{#                                                       class="form-control" required>#}
+{#                                                </div>#}
+{#                                                <div class="form-group"><label>Enable密码</label>#}
+{#                                                <input type="password" id="en" name="en" maxlength="32" placeholder="输入设备Enable密码(选填)"#}
+{#                                                       class="form-control">#}
+{#                                                </div>#}
+{#                                            </div>#}
+{#                                        </form>#}
+{#                                    </div>#}
+{#                                    <div class="modal-footer">#}
+{#                                        <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>#}
+{#                                        <button type="button" class="btn btn-primary" id="addhost">保存</button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row m-b-sm m-t-sm">
+                            <div class="col-md-1">
+                                <button type="button" id="loading-example-btn" class="btn btn-white btn-sm"><i class="fa fa-refresh"></i> 刷新</button>
+                            </div>
+                            <div class="col-md-11">
+                                <div class="input-group"><input type="text" id="filter" placeholder="搜索" class="form-control-sm form-control"> <span
+                                        class="input-group-btn">
+                                        <button type="button" class="btn btn-sm btn-primary"> 搜索</button> </span></div>
+                            </div>
+                        </div>
+
+                        <div class="project-list table-responsive">
+                            <table class="footable table table-hover table-stripped" data-page-size="8" data-filter=#filter  data-limit-navigation="5">
+                                <thead>
+                                <tr>
+                                    <th data-sort-ignore="true"><input type="checkbox" class="i-checks checkall"></th>
+                                    <th>状态</th>
+                                    <th>虚拟机</th>
+{#                                    {% if cluster.project.project != 'admin' and loginuser.project.project == 'admin'%}#}
+                                    {% if loginuser.project.project == 'admin'%}
+                                    <th>分派</th>
+                                    {% endif %}
+                                    <th>IP地址</th>
+                                    <th>操作系统</th>
+                                    <th data-hide="phone,tablet">CPU</th>
+                                    <th data-hide="phone,tablet">内存</th>
+                                    <th data-hide="phone,tablet">硬盘</th>
+                                    <th data-hide="phone,tablet">网卡</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in vmlist %}
+                                <tr class="vm">
+                                    <td><input type="checkbox" class="i-checks" name="input[]" uuid="{{ row.uuid }}" vm="{{ row.vm }}"></td>
+                                    <td class="project-status">
+                                        <span class="label state" state="{{ row.power }}"><i class="fa"></i></span>
+                                    </td>
+                                    <td class="project-title">
+                                        {% if cluster.project.project == 'admin'%}
+                                        <a href="/cloud/vsphere-{{ host.host }}?cluster={{ host.cluster.cluster }}&tab=manager&uuid={{ row.uuid }}&vm={{ row.vm }}">{{ row.vm }}</a>
+                                        {% else %}
+                                        <a href="/cloud/vsphere-{{ cloudhost.host }}?cluster={{ cloudhost.cluster.cluster }}&tab=manager&uuid={{ row.uuid }}&vm={{ row.vm }}">{{ row.vm }}</a>
+                                        {% endif %}
+                                    </td>
+                                    {% if loginuser.project.project == 'admin'%}
+                                    <td class="project-host">
+                                        <span>{{ row.host }}</span>
+                                    </td>
+                                    {% endif %}
+                                    <td class="project-ip">
+                                        <span>{{ row.ip }}</span>
+                                    </td>
+                                    <td class="project-system">
+                                        <span>{{ row.system }}</span>
+                                    </td>
+                                    <td class="project-cpu">
+                                        <span>{{ row.cpu }}个</span>
+                                    </td>
+                                    <td class="project-memory">
+                                        <span>{{ row.mem }}G</span>
+                                    </td>
+                                    <td class="project-disk">
+                                        <span>{{ row.disk }}G</span>
+                                    </td>
+                                    <td class="project-netcard">
+                                        <span>{{ row.netcard }}个</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="12">
+                                            <ul class="pagination float-right"></ul>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="/static/js/plugins/footable/footable.all.min.js"></script>
+    <!-- iCheck -->
+    <script src="/static/js/plugins/iCheck/icheck.min.js"></script>
+    <!-- Jquery Validate -->
+    <script src="/static/js/plugins/validate/jquery.validate.min.js"></script>
+    <script src="/static/js/plugins/validate/messages_zh.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.footable').footable();
+
+            $('#loading-example-btn').click(function () {
+                btn = $(this);
+                simpleLoad(btn, true);
+                location.reload();
+                // Ajax example
+//                $.ajax().always(function () {
+//                    simpleLoad($(this), false)
+//                });
+
+                simpleLoad(btn, false)
+            });
+
+            menuActive();
+            checkRadio();
+            vmCss();
+            vmConfig();
+            vmConsole();
+{#            $('#addhost').click(function () {#}
+{#                if($("#addhost_form").valid()) {#}
+{#                    $.ajax({#}
+{#                        url: '/hostadd-{{ clust.id }}/',#}
+{#                        type: 'POST',#}
+{#                        data: $('#addhost_form').serialize(),#}
+{#                        dataType: 'JSON',#}
+{#                        traditionail: true,#}
+                        {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+{#                        success: function (obj) {#}
+{#                            if (obj.status) {#}
+{#                                location.reload();#}
+{#                            } else {#}
+{#                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);#}
+{#                            }#}
+{#                        }#}
+{#                    })#}
+{#                }#}
+{#            });#}
+{#            $('#getexcel').click(function () {#}
+{#                var exceltime = $('#getexcel_form #exceltime select').val();#}
+{#                var datatype = $('#getexcel_form #datatype select').val();#}
+{#                window.open('/getfile?file=yuExcel&type=cluster&cluster={{ clust.cluster }}&time={0}&datatype={1}'.format(exceltime,datatype));#}
+{#            })#}
+
+        });
+
+        function menuActive() {
+            $('#cluster-menu, #cloud-menu').addClass('active');
+            $('#cluster-menu .nav-second-level').addClass('in').attr('aria-expanded','true');
+        }
+        function vmCss() {
+            var vm = $('.vm');
+            for (var i = 0; i <'{{ vmlist }}'.length; i++) {
+                vmSate(vm.eq(i));
+            }
+        }
+        function vmSate(vm) {
+            var state = vm.find('.state');
+            if(state.attr('state') =='poweredOn'){ state.addClass('label-primary');state.children().addClass('fa-play')}
+            else if(state.attr('state')=='suspended'){ state.addClass('label-warning');state.children().addClass('fa-pause')}
+            else {state.addClass('label-danger');state.children().addClass('fa-stop')}
+        }
+{#        function hostWidth(host) {#}
+{#            var cpu = host.find('.cpu');#}
+{#            var memory = host.find('.memory');#}
+{#            cpu.next().children().css('width', cpu.text());#}
+{#            memory.next().children().css('width', memory.text());#}
+{#        }#}
+        function vmConfig() {
+            $('.vm_manager').click(function () {
+                var uuidlist = [];
+                var action = $(this).attr('name');
+                $("input[name='input[]']:checked").each(function () {
+                    uuidlist.push($(this).attr('uuid'));
+                });
+                yuAlert('info', '您好 {{ loginuser.username }}','正在配置虚拟机');
+                $.ajax({
+                    {% if cluster.project.project == 'admin' %}
+                    url: '/cloud/vsphereconfig-{{ host.cluster.cluster }}-{{ host.host }}/',
+                    {% else %}
+                    url: '/cloud/vsphereconfig-{{ cloudhost.cluster.cluster }}-{{ cloudhost.host }}/',
+                    {% endif %}
+                    type: 'POST',
+                    data: {'action': action, 'uuidlist': uuidlist},
+                    dataType: 'JSON',
+                    traditionail: true,
+                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},
+                    success: function (obj) {
+                        if (obj.status) {
+                            location.reload()
+                        } else {
+                            yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                        }
+                    }
+                })
+            });
+        }
+        function vmConsole() {
+            $('.console').click(function () {
+                var urlport = window.location.port;
+                $("input[name='input[]']:checked").each(function () {
+                    var uuid = $(this).attr('uuid');
+                    var vm = $(this).attr('vm');
+                    {% if cluster.project.project == 'admin' %}
+                    var url = '/cloud/vsphere-{{ host.host }}?cluster={{ host.cluster.cluster }}&tab=console&uuid={0}&vm={1}&urlport={2}'.format(uuid, vm, urlport);
+                    {% else %}
+                    var url = '/cloud/vsphere-{{ cloudhost.host }}?cluster={{ cloudhost.cluster.cluster }}&tab=console&uuid={0}&vm={1}&urlport={2}'.format(uuid, vm, urlport);
+                    {% endif %}
+                    window.open( url, '_blank');
+                });
+            });
+        }
+    </script>
+{% endblock %}

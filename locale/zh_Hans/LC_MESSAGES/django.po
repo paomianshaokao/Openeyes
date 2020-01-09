@@ -1,0 +1,111 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-08-13 21:43+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: authen/templates/project.html:34 authen/templates/user.html:35
+#: cloud/templates/cluster.html:35
+msgid "create"
+msgstr "创建"
+
+#: authen/templates/project.html:35 authen/templates/user.html:36
+#: cloud/templates/cluster.html:36
+msgid "edit"
+msgstr "编辑"
+
+#: authen/templates/project.html:36 authen/templates/user.html:37
+#: cloud/templates/cluster.html:37
+msgid "delete"
+msgstr "删除"
+
+#: authen/templates/project.html:43 authen/templates/project.html:132
+#: authen/templates/user.html:44 authen/templates/user.html:192
+#: cloud/templates/cluster.html:46 cloud/templates/cluster.html:170
+#: cloud/templates/host.html:55 cloud/templates/host.html:258
+#: system/templates/system.html:66 system/templates/system.html:106
+#: system/templates/system.html:126
+msgid "Close"
+msgstr "关闭"
+
+#: authen/templates/project.html:45
+msgid "create project"
+msgstr "创建项目"
+
+#: authen/templates/user.html:46
+msgid "create user"
+msgstr "创建用户"
+
+#: cloud/templates/host.html:39 cloud/templates/host.html:57
+msgid "ceate host"
+msgstr "创建主设备"
+
+#: cloud/templates/host.html:40 cloud/templates/host.html:260
+msgid "edit host"
+msgstr "编辑主设备"
+
+#: cloud/templates/host.html:41
+msgid "delete host"
+msgstr "删除主设备"
+
+#: cloud/templates/host.html:44 cloud/templates/host.html:107
+msgid "ceate cloudhost"
+msgstr "创建云设备"
+
+#: cloud/templates/host.html:45 cloud/templates/host.html:312
+msgid "edit cloudhost"
+msgstr "编辑云设备"
+
+#: cloud/templates/host.html:46
+msgid "delete cloudhost"
+msgstr "删除云设备"
+
+#: cloud/templates/vsphere.html:51 cloud/templates/vsphere.html:58
+msgid "console"
+msgstr "控制台"
+
+#: cloud/templates/vsphere.html:54
+msgid "allocation"
+msgstr "分派"
+
+#: cloud/templates/vsphere.html:62 cloud/templates/vsphereconsole.html:33
+msgid "poweron"
+msgstr "打开电源"
+
+#: cloud/templates/vsphere.html:64 cloud/templates/vsphereconsole.html:35
+msgid "poweroff"
+msgstr "关机"
+
+#: cloud/templates/vsphere.html:66 cloud/templates/vsphereconsole.html:37
+msgid "suspend"
+msgstr "挂起"
+
+#: cloud/templates/vsphere.html:68 cloud/templates/vsphereconsole.html:39
+msgid "reboot"
+msgstr "重置"
+
+#: cloud/templates/vsphere.html:70 cloud/templates/vsphereconsole.html:41
+msgid "softreboot"
+msgstr "重启"
+
+#: openeyes/settings.py:142
+msgid "English"
+msgstr ""
+
+#: openeyes/settings.py:143
+msgid "中文简体"
+msgstr ""

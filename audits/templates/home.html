@@ -1,0 +1,457 @@
+{% extends 'base.html' %}
+{%  load i18n %}
+
+{% block title %}{{ oem.oemname }}管理系统 | 主页{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="/static/css/vis-network.min.css"/>
+{% endblock css %}
+
+{% block content %}
+
+    <div class="wrapper wrapper-content">
+        <div class="row">
+            <div class="col-lg-2">
+                <div class="ibox ">
+                    <div class="ibox-title">
+                        <span class="label label-success pull-right">本周</span>
+                        <h5>一般</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <h1 class="no-margins">{{ system.normal }}</h1>
+{#                        <div class="stat-percent font-bold text-success">98% <i class="fa fa-bolt"></i></div>#}
+                        <div class="stat-percent font-bold text-success"> <i class="fa fa-level-up"></i></div>
+                        <small>总计一般告警量</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-2">
+                <div class="ibox ">
+                    <div class="ibox-title">
+                        <span class="label label-warning pull-right">本周</span>
+                        <h5>紧急</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <h1 class="no-margins">{{ system.warning }}</h1>
+{#                        <div class="stat-percent font-bold text-info">20% <i class="fa fa-level-up"></i></div>#}
+                        <div class="stat-percent font-bold text-warning"> <i class="fa fa-bolt"></i></div>
+                        <small>总计紧急告警量</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-2">
+                <div class="ibox ">
+                    <div class="ibox-title">
+                        <span class="label label-danger pull-right">本周</span>
+                        <h5>危险</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <h1 class="no-margins">{{ system.danger }}</h1>
+{#                        <div class="stat-percent font-bold text-info">20% <i class="fa fa-level-up"></i></div>#}
+                        <div class="stat-percent font-bold text-danger"> <i class="fa fa-bolt"></i></div>
+                        <small>总计危险告警量</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-2">
+                <div class="ibox ">
+                    <div class="ibox-title">
+                        <span class="label label-primary pull-right">本周</span>
+                        <h5>访客</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <h1 class="no-margins">{{ system.login }}</h1>
+{#                        <div class="stat-percent font-bold text-info">20% <i class="fa fa-level-up"></i></div>#}
+                        <div class="stat-percent font-bold text-info"> <i class="fa fa-user"></i></div>
+                        <small>总计访客量</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="ibox ">
+                    <div class="ibox-title">
+                        <span class="label label-primary pull-right">今天</span>
+                        <h5>设备量</h5>
+                    </div>
+                    <div class="ibox-content">
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h1 class="no-margins">{{ system.onhostnumber }}</h1>
+{#                                <div class="font-bold text-navy">44% <i class="fa fa-level-up"></i>#}
+                                <div class="font-bold text-navy"> <i class="fa fa-level-up"></i>
+                                    <small>在线设备</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h1 class="no-margins">{{ system.hostnumber }}</h1>
+                                <div class="font-bold text-navy"> <i class="fa fa-level-up"></i>
+                                    <small>总计设备量</small>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="ibox ">
+                    <div class="ibox-content">
+                        <div>
+{#                            <span class="float-right text-right">#}
+{#                            <small>Average value of sales in the past month in: <strong>United states</strong></small>#}
+{#                                <br/>#}
+{#                                All sales: 162,862#}
+{#                            </span>#}
+                            <h3 class="font-bold no-margins">
+                                健康状态
+                            </h3>
+{#                            <small>Sales marketing.</small>#}
+                        </div>
+
+                        <div class="m-t-sm">
+
+                            <div class="row" id="systemchart">
+                                <div class="col-md-9">
+                                    <div>
+                                        <canvas id="lineChart" height="132"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <ul class="stat-list m-t-lg">
+                                        <li>
+                                            <h3 class="no-margins cpu">{% with systemcanvas|last as last %}
+                                                {{ last.cpu|default:'0' }}{% endwith %}%</h3>
+                                            <small>CPU</small>
+                                            <div class="progress progress-mini">
+                                                <div class="progress-bar" style="width:{% with systemcanvas|last as last %}
+                                                    {{ last.cpu|default:'0' }}{% endwith %}%"></div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <h3 class="no-margins memory">{% with systemcanvas|last as last %}
+                                                {{ last.memory|default:'0' }}{% endwith %}%</h3>
+                                            <small>内存</small>
+                                            <div class="progress progress-mini">
+                                                <div class="progress-bar" style="width:{% with systemcanvas|last as last %}
+                                                    {{ last.memory|default:'0' }}{% endwith %}%"></div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <h3 class="no-margins disk">{% with systemcanvas|last as last %}
+                                                {{ last.disk|default:'0' }}{% endwith %}%</h3>
+                                            <small>硬盘</small>
+                                            <div class="progress progress-mini">
+                                                <div class="progress-bar" style="width:{% with systemcanvas|last as last %}
+                                                    {{ last.disk|default:'0' }}{% endwith %}%"></div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="m-t-md">
+{#                            <small class="float-right">#}
+{#                                <i class="fa fa-clock-o"> </i>#}
+{#                                Update on 16.07.2015#}
+{#                            </small>#}
+                            <small>
+                                <strong>设备健康提醒:</strong> 各项参数不要超过90%.
+                            </small>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="ibox ">
+                    <div class="ibox-title">
+                        <span class="label label-warning pull-right">最近</span>
+                        <h5>用户访问记录</h5>
+                    </div>
+                    {% for login in system.loginusername%}
+                    <div class="ibox-content">
+                        <div class="row">
+                            <div class="col-4">
+                                <small class="stats-label">用户</small>
+                                <h4>{{ login.username }}</h4>
+                            </div>
+                            <div class="col-4">
+                                <small class="stats-label">IP地址</small>
+                                <h4>{{ login.ip }}</h4>
+                            </div>
+                            <div class="col-4">
+                                <small class="stats-label">登录时间</small>
+                                <h4>{{ login.ctime | date:'Y-m-d H:i' }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+{#        <div class="row">#}
+{##}
+{#            <div class="col-lg-12">#}
+{#                <div class="ibox ">#}
+{#                    <div class="ibox-title">#}
+{#                        <h5>Custom responsive table </h5>#}
+{#                        <h5>逻辑拓扑 </h5>#}
+{#                        <div class="ibox-tools">#}
+{#                            <a class="collapse-link">#}
+{#                                <i class="fa fa-chevron-up"></i>#}
+{#                            </a>#}
+{#                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">#}
+{#                                <i class="fa fa-wrench"></i>#}
+{#                            </a>#}
+{#                            <ul class="dropdown-menu dropdown-user">#}
+{#                                <li><a href="#" class="dropdown-item">Config option 1</a>#}
+{#                                </li>#}
+{#                                <li><a href="#" class="dropdown-item">Config option 2</a>#}
+{#                                </li>#}
+{#                            </ul>#}
+{#                            <a class="close-link">#}
+{#                                <i class="fa fa-times"></i>#}
+{#                            </a>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="ibox-content">#}
+{#                        <div class="row m-b-sm m-t-sm">#}
+{#                            <div class="col-md-12">#}
+{#                                <div class="form-group">#}
+{#                                    <div class="row">#}
+{#                                        <div class="col-md-2">#}
+{#                                            <select class="custom-select custom-select-sm" id="type">#}
+{#                                                <option value="star">星型图</option>#}
+{#                                                <option value="tree">树状图</option>#}
+{#                                            </select>#}
+{#                                        </div>#}
+{#                                        <div class="col-md-2">#}
+{#                                            <select class="custom-select custom-select-sm" id="hosts">#}
+{#                                                <option value="network">网络</option>#}
+{#                                                <option value="server">网络+服务器</option>#}
+{#                                                <option value="pc">网络+电脑</option>#}
+{#                                                <option value="dumb">网络+哑终端</option>#}
+{#                                                <option value="all">所有</option>#}
+{#                                            </select>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div id="networktop" class="col-md-12" style="width:100%;height:480px"></div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="row">#}
+{##}
+{#            <div class="col-lg-12">#}
+{#                <div class="ibox ">#}
+{#                    <div class="ibox-title">#}
+{#                        <h5>Custom responsive table </h5>#}
+{#                        <div class="ibox-tools">#}
+{#                            <a class="collapse-link">#}
+{#                                <i class="fa fa-chevron-up"></i>#}
+{#                            </a>#}
+{#                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">#}
+{#                                <i class="fa fa-wrench"></i>#}
+{#                            </a>#}
+{#                            <ul class="dropdown-menu dropdown-user">#}
+{#                                <li><a href="#" class="dropdown-item">Config option 1</a>#}
+{#                                </li>#}
+{#                                <li><a href="#" class="dropdown-item">Config option 2</a>#}
+{#                                </li>#}
+{#                            </ul>#}
+{#                            <a class="close-link">#}
+{#                                <i class="fa fa-times"></i>#}
+{#                            </a>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="ibox-content">#}
+{#                        <div class="row">#}
+{#                            <div class="col-sm-9 m-b-xs">#}
+{#                                <div data-toggle="buttons" class="btn-group btn-group-toggle">#}
+{#                                    <label class="btn btn-sm btn-white"> <input type="radio" id="option1" name="options"> Day </label>#}
+{#                                    <label class="btn btn-sm btn-white active"> <input type="radio" id="option2" name="options"> Week </label>#}
+{#                                    <label class="btn btn-sm btn-white"> <input type="radio" id="option3" name="options"> Month </label>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <div class="col-sm-3">#}
+{#                                <div class="input-group mb-3">#}
+{#                                    <input type="text" class="form-control form-control-sm" placeholder="Search">#}
+{#                                    <div class="input-group-append">#}
+{#                                        <button class="btn btn-sm btn-primary" type="button">Go!</button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="table-responsive">#}
+{#                            <table class="table table-striped">#}
+{#                                <thead>#}
+{#                                <tr>#}
+{#                                    <th>#</th>#}
+{#                                    <th>Project</th>#}
+{#                                    <th>Name</th>#}
+{#                                    <th>Phone</th>#}
+{#                                    <th>Company</th>#}
+{#                                    <th>Completed</th>#}
+{#                                    <th>Task</th>#}
+{#                                    <th>Date</th>#}
+{#                                    <th>Action</th>#}
+{#                                </tr>#}
+{#                                </thead>#}
+{#                                <tbody>#}
+{#                                <tr>#}
+{#                                    <td>1</td>#}
+{#                                    <td>Project#}
+{#                                        <small>This is example of project</small>#}
+{#                                    </td>#}
+{#                                    <td>Patrick Smith</td>#}
+{#                                    <td>0800 051213</td>#}
+{#                                    <td>Inceptos Hymenaeos Ltd</td>#}
+{#                                    <td><span class="pie">0.52/1.561</span></td>#}
+{#                                    <td>20%</td>#}
+{#                                    <td>Jul 14, 2013</td>#}
+{#                                    <td><a href="#"><i class="fa fa-check text-navy"></i></a></td>#}
+{#                                </tr>#}
+{#                                <tr>#}
+{#                                    <td>2</td>#}
+{#                                    <td>Alpha project</td>#}
+{#                                    <td>Alice Jackson</td>#}
+{#                                    <td>0500 780909</td>#}
+{#                                    <td>Nec Euismod In Company</td>#}
+{#                                    <td><span class="pie">6,9</span></td>#}
+{#                                    <td>40%</td>#}
+{#                                    <td>Jul 16, 2013</td>#}
+{#                                    <td><a href="#"><i class="fa fa-check text-navy"></i></a></td>#}
+{#                                </tr>#}
+{#                                </tbody>#}
+{#                            </table>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+    </div>
+{% endblock %}
+
+{% block js %}
+    <!-- ChartJS-->
+    <script src="/static/js/plugins/chartJs/Chart.min.js"></script>
+    <script src="/static/js/plugins/chartJs/Chart.bundle.min.js"></script>
+    <!-- Peity -->
+    <script src="/static/js/plugins/peity/jquery.peity.min.js"></script>
+    <script src="/static/js/demo/peity-demo.js"></script>
+    <!-- Visjs -->
+    <script src="/static/js/plugins/visjs/vis.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            yuAlert('success', '欢迎您 {{ loginuser.username }}','来到{{ oem.oemname }}管理后台');
+            menuActive();
+            homeCss();
+            systemChart();
+{#            logictop()#}
+        });
+
+        function menuActive() {
+            $('#home-menu').addClass('active');
+        }
+        function homeCss() {
+        }
+        function systemChart() {
+            var lineData = {
+                datasets: [
+                    {
+                        label: "CPU",
+                        backgroundColor: "rgba(26,179,148,0.5)",
+                        borderColor: "rgba(26,179,148,0.7)",
+                        pointBackgroundColor: "rgba(26,179,148,1)",
+                        pointBorderColor: "#fff",
+                        data: [{% for row in systemcanvas %}{x: "{{ row.ctime|date:'Y-m-d H:i' }}", y: "{{ row.cpu }}"},{% endfor %}]
+                    },
+                    {
+                        label: "内存",
+                        backgroundColor: "rgba(220,220,220,0.5)",
+                        borderColor: "rgba(220,220,220,1)",
+                        pointBackgroundColor: "rgba(220,220,220,1)",
+                        pointBorderColor: "#fff",
+                        data: [{% for row in systemcanvas %}{x: "{{ row.ctime|date:'Y-m-d H:i' }}", y: "{{ row.memory }}"},{% endfor %}]
+                    },
+                    {
+                        label: "硬盘",
+                        backgroundColor: "rgba(89,70,226,0.5)",
+                        borderColor: "rgba(89,70,226,0.7)",
+                        pointBackgroundColor: "rgba(89,70,226,1)",
+                        pointBorderColor: "#fff",
+                        data: [{% for row in systemcanvas %}{x: "{{ row.ctime|date:'Y-m-d H:i' }}", y: "{{ row.disk }}"},{% endfor %}]
+                    }
+                ]
+            };
+            var lineOptions = {
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {unit: 'minute'}
+                    }]
+                }
+            };
+            var ctx = document.getElementById("lineChart").getContext("2d");
+            new Chart(ctx, {type: 'line', data: lineData, options: lineOptions});
+        }
+{#        function logictop() {#}
+{#            var type = $('#type').val();#}
+{#            var hosts = $('#hosts').val();#}
+{#            draw(type, hosts);#}
+{#            $('#type ,#hosts').change(function () {#}
+{#                type = $('#type').val();#}
+{#                hosts = $('#hosts').val();#}
+{#                draw(type, hosts);#}
+{#            });#}
+{#        }#}
+{#        function draw(type, hosts) {#}
+{#            var nodes = null;var edges = null;var options = null;var networktop = null;#}
+{#            var layoutMethod = "directed";#}
+{#            var DIR = '/static/hostimg/';#}
+{#            function destroy() {if (networktop !== null) {networktop.destroy();networktop = null;}}#}
+{#            destroy();#}
+{#            var star = {#}
+{#                groups: {#}
+{#                    firewall: {shape: 'image', image: DIR + 'firewall.png'}, firewall_error: {shape: 'image', image: DIR + 'firewall_error.png'},#}
+{#                    router: {shape: 'image', image: DIR + 'router.png'}, router_error: {shape: 'image', image: DIR + 'router_error.png'},#}
+{#                    core: {shape: 'image', image: DIR + 'core.png'}, core_error: {shape: 'image', image: DIR + 'core_error.png'},#}
+{#                    conver: {shape: 'image', image: DIR + 'conver.png'}, conver_error: {shape: 'image', image: DIR + 'conver_error.png'},#}
+{#                    access: {shape: 'image', image: DIR + 'access.png'}, access_error: {shape: 'image', image: DIR + 'access_error.png'},#}
+{#                    ap: {shape: 'image', image: DIR + 'ap.png'}, ap_error: {shape: 'image', image: DIR + 'ap_error.png'},#}
+{#                    server: {shape: 'image', image: DIR + 'server.png'}, server_error: {shape: 'image', image: DIR + 'server_error.png'},#}
+{#                    camera: {shape: 'image', image: DIR + 'camera.png'}, camera_error: {shape: 'image', image: DIR + 'camera_error.png'},#}
+{#                    pc: {shape: 'image', image: DIR + 'pc.png'},#}
+{#                    printer: {shape: 'image', image: DIR + 'printer.png'},#}
+{#                    telephone: {shape: 'image', image: DIR + 'telephone.png'}#}
+{#                }#}
+{#            };#}
+{#            var tree = {layout: {hierarchical: {sortMethod: layoutMethod}}};#}
+{#            if (type == 'star') options = star; else if (type == 'tree') options = $.extend(star, tree); else options = {};#}
+{#            // create an array with nodes#}
+{#            var top = {{ top|safe }};var network = top.network;var server = top.server;var pc = top.pc;var dumb = top.dumb;#}
+{#            if (hosts == 'network') nodes = network; else if (hosts == 'server') nodes = network.concat(server);#}
+{#            else if (hosts == 'pc') nodes = network.concat(pc); else if (hosts == 'dumb') nodes = network.concat(dumb);#}
+{#            else if (hosts == 'all') nodes = network.concat(server).concat(pc).concat(dumb); else nodes = [];#}
+{#            // create an array with edges#}
+{#            var edges = top.edges;#}
+{#            // create a network#}
+{#            var container = document.getElementById('networktop');#}
+{#            var data = {nodes: nodes, edges: edges};#}
+{#            var networktop = new vis.Network(container, data, options);#}
+{#        }#}
+    </script>
+{% endblock %}

@@ -1,0 +1,532 @@
+{% extends 'base.html' %}
+{%  load i18n %}
+
+{% block title %}{{ oem.oemname }}管理系统 | 系统{% endblock %}
+
+{% block css %}
+    <link href="/static/css/plugins/footable/footable.core.css" rel="stylesheet">
+{% endblock css %}
+
+{% block content %}
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-4">
+            <h2>系统</h2>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/audits/home/">主页</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>系统</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="wrapper wrapper-content">
+        <div class="row animated fadeInRight">
+            <div class="col-md-4">
+                <div class="ibox ">
+                    <div class="ibox-title">
+                        <h5>系统详情</h5>
+                    </div>
+                    <div>
+                        <div class="ibox-content no-padding border-left-right">
+                            <img alt="image" class="img-fluid" src="/static/img/profile_big.jpg">
+                        </div>
+                        <div class="ibox-content profile-content">
+                            <h4><strong>主机名</strong></h4>
+                            <p> {{ system.hostname }}</p>
+                            <h5>系统版本</h5>
+                            <p>Ver {{ version.version }}</p>
+                            <div class="row m-t-lg">
+                                <div class="col-md-4">
+                                    <span class="bar">{% for row in systemcanvas %}{{ row.cpu }},{% endfor %}0</span>
+                                    <h5><strong>CPU</strong> {{ system.cpu }}</h5>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="line">{% for row in systemcanvas %}{{ row.memory }},{% endfor %}0</span>
+                                    <h5><strong>内存</strong> {{ system.memory }}</h5>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="bar">{% for row in systemcanvas %}{{ row.disk }},{% endfor %}0</span>
+                                    <h5><strong>硬盘</strong> {{ system.disk }}</h5>
+                                </div>
+                            </div>
+                            <h1></h1>
+                            <div class="user-button">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <a  data-toggle="modal" href="#host-form" class="btn btn-primary btn-sm btn-block"><i class="fa fa-edit"></i> 修改主机名</a>
+                                    </div>
+                                    <div class="modal inmodal fade" id="host-form" tabindex="-1" role="dialog" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                                                            class="sr-only">{% trans 'Close' %}</span></button>
+            {#                                        <i class="fa fa-laptop modal-icon"></i>#}
+                                                    <h4 class="modal-title">修改主机名</h4>
+            {#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form class="am-form" id="host_form">
+                                                        {% csrf_token %}
+                                                        <div class="form-group">
+                                                            <div class="form-group"><label>主机名</label>
+                                                            <input type="text" id="host" name="host" minlength="2" maxlength="32" placeholder="输入主机名"
+                                                                   class="form-control" value="{{ system.hostname }}" required>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                                                    <button type="button" class="btn btn-primary" id="edithost" >保存</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button data-toggle="dropdown" class="btn btn-warning btn-sm btn-block dropdown-toggle">
+                                            <i class="fa fa-gavel"></i> 管理
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a data-toggle="modal" href="#reload-form" class="dropdown-item">重启</a></li>
+                                            <li><a data-toggle="modal" href="#shutdown-form" class="dropdown-item">关机</a></li>
+{#                                            <li><a data-toggle="modal" href="#download-form" class="dropdown-item">插件下载</a></li>#}
+{#                                            <li class="dropdown-divider"></li>#}
+{#                                            <li><a class="dropdown-item" href="#">Separated link</a></li>#}
+                                        </ul>
+                                    </div>
+                                    <div class="modal inmodal fade" id="reload-form" tabindex="-1" role="dialog" aria-hidden="true">
+                                        <div class="modal-dialog modal-sm">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                                                            class="sr-only">{% trans 'Close' %}</span></button>
+            {#                                        <i class="fa fa-laptop modal-icon"></i>#}
+                                                    <h4 class="modal-title">操作提示</h4>
+            {#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+                                                </div>
+                                                <div class="modal-body">
+                                                    <h2>确认重启主机吗？</h2>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                                                    <button type="button" class="btn btn-primary" id="reload" >确认</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal inmodal fade" id="shutdown-form" tabindex="-1" role="dialog" aria-hidden="true">
+                                        <div class="modal-dialog modal-sm">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                                                            class="sr-only">{% trans 'Close' %}</span></button>
+            {#                                        <i class="fa fa-laptop modal-icon"></i>#}
+                                                    <h4 class="modal-title">操作提示</h4>
+            {#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+                                                </div>
+                                                <div class="modal-body">
+                                                    <h2>确定关闭设备吗？</h2>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                                                    <button type="button" class="btn btn-primary" id="shutdown" >确认</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+{#                                    <div class="modal inmodal fade" id="download-form" tabindex="-1" role="dialog" aria-hidden="true">#}
+{#                                        <div class="modal-dialog">#}
+{#                                            <div class="modal-content">#}
+{#                                                <div class="modal-header">#}
+{#                                                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span#}
+{#                                                            class="sr-only">Close</span></button>#}
+            {#                                        <i class="fa fa-laptop modal-icon"></i>#}
+{#                                                    <h4 class="modal-title">插件下载</h4>#}
+            {#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+{#                                                </div>#}
+{#                                                <div class="modal-body">#}
+{#                                                    {% csrf_token %}#}
+{#                                            <div class="form-group">#}
+{#                                                <div class="form-group" id="file"><label>插件</label>#}
+{#                                                    <select class="form-control m-b" name="file">#}
+{#                                                        <option value="yumstsc32">Windows远程桌面x32</option>#}
+{#                                                        <option value="yumstsc64">Windows远程桌面x64</option>#}
+{#                                                        <option value="yuclient32">WindowsClient客户端x32</option>#}
+{#                                                        <option value="yuclient64">WindowsClient客户端x64</option>#}
+{#                                                    </select>#}
+{#                                                </div>#}
+{#                                            </div>#}
+{#                                        </form>#}
+{#                                                </div>#}
+{#                                                <div class="modal-footer">#}
+{#                                                    <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>#}
+{#                                                    <button type="button" class="btn btn-primary" id="download" >下载</button>#}
+{#                                                </div>#}
+{#                                            </div>#}
+{#                                        </div>#}
+{#                                    </div>#}
+                                </div>
+                            </div>
+                            <h1></h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+{#                <div class="ibox ">#}
+{#                    <div class="ibox-title">#}
+{#                        <h5>网络配置</h5>#}
+{#                        <div class="ibox-tools">#}
+{#                            <a class="collapse-link">#}
+{#                                <i class="fa fa-chevron-up"></i>#}
+{#                            </a>#}
+{#                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">#}
+{#                                <i class="fa fa-wrench"></i>#}
+{#                            </a>#}
+{#                            <ul class="dropdown-menu dropdown-user">#}
+{#                                <li><a href="#" class="dropdown-item">Config option 1</a>#}
+{#                                </li>#}
+{#                                <li><a href="#" class="dropdown-item">Config option 2</a>#}
+{#                                </li>#}
+{#                            </ul>#}
+{#                            <a class="close-link">#}
+{#                                <i class="fa fa-times"></i>#}
+{#                            </a>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="ibox-content">#}
+{#                        <div class="project-list table-responsive">#}
+{#                            <table class="footable table table-stripped inter-table" data-page-size="8" data-filter=#filter data-limit-navigation="5">#}
+{#                                <thead>#}
+{#                                <tr>#}
+{#                                    <th>接口</th>#}
+{#                                    <th>状态</th>#}
+{#                                    <th>模式</th>#}
+{#                                    <th>IP地址</th>#}
+{#                                    <th>掩码</th>#}
+{#                                    <th>网关</th>#}
+{#                                    <th>DNS</th>#}
+{#                                    <th>操作</th>#}
+{#                                </tr>#}
+{#                                </thead>#}
+{#                                <tbody>#}
+{#                                {% for i in interfaces %}#}
+{#                                    <tr class="users">#}
+{#                                        <td class="project-title">#}
+{#                                            <span>{{ i.interface }}</span>#}
+{#                                        </td>#}
+{#                                        <td class="project-state">#}
+{#                                            <span>{% if 'yes' ==  i.state %}开启{% else %}关闭{% endif %}</span>#}
+{#                                        </td>#}
+{#                                        <td class="project-mode">#}
+{#                                            <span>{% if 'static' ==  i.mode %}静态{% endif %}</span>#}
+{#                                        </td>#}
+{#                                        <td class="project-ip">#}
+{#                                            <span>{{ i.ip }}</span>#}
+{#                                        </td>#}
+{#                                        <td class="project-mask">#}
+{#                                            <span>{{ i.mask }}</span>#}
+{#                                        </td>#}
+{#                                        <td class="project-dns">#}
+{#                                            <span>{{ i.gateway }}</span>#}
+{#                                        </td>#}
+{#                                        <td class="project-gateway">#}
+{#                                            <span>{{ i.dns }}</span>#}
+{#                                        </td>#}
+{#                                        <td class="project-actions">#}
+{#                                            <a data-toggle="modal" href="#inter-form" class="btn btn-primary btn-sm editinter"#}
+{#                                            inter="{{ i.interface }}" state="{{ i.state }}" mode="static" ip="{{ i.ip }}" mask="{{ i.mask }}"#}
+{#                                            gateway="{{ i.gateway }}" dns="{{ i.dns }}">#}
+{#                                                <i class="fa fa-pencil"></i> 编辑 </a>#}
+{#                                        </td>#}
+{#                                    </tr>#}
+{#                                {% endfor %}#}
+{#                                </tbody>#}
+{#                                <tfoot>#}
+{#                                <tr>#}
+{#                                    <td colspan="12">#}
+{#                                        <ul class="pagination float-right"></ul>#}
+{#                                    </td>#}
+{#                                </tr>#}
+{#                                </tfoot>#}
+{#                            </table>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <div class="ibox ">#}
+{#                    <div class="ibox-title">#}
+{#                        <h5>邮件配置</h5>#}
+{#                        <div class="ibox-tools">#}
+{#                            <a class="collapse-link">#}
+{#                                <i class="fa fa-chevron-up"></i>#}
+{#                            </a>#}
+{#                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">#}
+{#                                <i class="fa fa-wrench"></i>#}
+{#                            </a>#}
+{#                            <ul class="dropdown-menu dropdown-user">#}
+{#                                <li><a href="#" class="dropdown-item">Config option 1</a>#}
+{#                                </li>#}
+{#                                <li><a href="#" class="dropdown-item">Config option 2</a>#}
+{#                                </li>#}
+{#                            </ul>#}
+{#                            <a class="close-link">#}
+{#                                <i class="fa fa-times"></i>#}
+{#                            </a>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="ibox-content">#}
+{#                        <form class="am-form" id="email_form">#}
+{#                            {% csrf_token %}#}
+{#                            <div class="form-group">#}
+{#                                <div class="form-group"><label>邮件服务器</label>#}
+{#                                    <input type="url" id="emailserver" name="emailserver" placeholder="输入邮件服务器" class="form-control"#}
+{#                                    maxlength="32" value="{{ system.emailserver }}" required>#}
+{#                                </div>#}
+{#                                <div class="form-group"><label>邮箱账号</label>#}
+{#                                    <input type="email" id="emailuser" name="emailuser" placeholder="输入邮箱账号" class="form-control"#}
+{#                                    maxlength="32" value="{{ system.emailusername }}" required>#}
+{#                                </div>#}
+{#                                <div class="form-group"><label>邮箱密码</label>#}
+{#                                    <input type="password" id="emailpass" name="emailpass" placeholder="输入邮箱密码" class="form-control"#}
+{#                                    maxlength="32" required>#}
+{#                                </div>#}
+{#                                <div class="form-group"><label>测试邮件账号</label>#}
+{#                                    <input type="email" id="emailtest" name="emailtest" placeholder="输入测试邮件账号" class="form-control"#}
+{#                                    maxlength="32" >#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </form>#}
+{#                        <div class="modal-footer">#}
+{#                            <button type="button" class="btn btn-primary" id="editemail">保存</button>#}
+{#                            <button type="button" class="btn btn-info" id="testemail" >测试邮件</button>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+            </div>
+        </div>
+    </div>
+    {#    配置网络#}
+{#    <div class="modal inmodal fade" id="inter-form" tabindex="-1" role="dialog" aria-hidden="true">#}
+{#        <div class="modal-dialog">#}
+{#            <div class="modal-content">#}
+{#                <div class="modal-header">#}
+{#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span#}
+{#                            class="sr-only">Close</span></button>#}
+    {#                                        <i class="fa fa-laptop modal-icon"></i>#}
+{#                    <h4 class="modal-title">配置网络</h4>#}
+    {#                                        <small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>#}
+{#                </div>#}
+{#                <div class="modal-body">#}
+{#                    <form class="am-form" id="inter_form">#}
+{#                        {% csrf_token %}#}
+{#                        <div class="form-group">#}
+{#                            <div class="form-group"><label>接口 *</label>#}
+{#                            <input type="text" id="interface" name="interface"#}
+{#                                   class="form-control" required>#}
+{#                            </div>#}
+{#                            <div class="form-group"><label>状态 *</label>#}
+{#                                <select class="form-control m-b" id="state" name="state">#}
+{#                                    <option value="yes">开启</option>#}
+{#                                    <option value="none">关闭</option>#}
+{#                                </select>#}
+{#                            </div>#}
+{#                            <div class="form-group"><label>模式 *</label>#}
+{#                                <select class="form-control m-b" name="mode">#}
+{#                                    <option value="static">静态</option>#}
+{#                                    <option value="dhcp">DHCP</option>#}
+{#                                </select>#}
+{#                            </div>#}
+{#                            <div class="form-group"><label>IP地址 *</label>#}
+{#                            <input type="text" id="ip" name="ip" placeholder="输入IP地址"#}
+{#                                   class="form-control" required>#}
+{#                            </div>#}
+{#                            <div class="form-group"><label>掩码 *</label>#}
+{#                            <input type="text" id="mask" name="mask" placeholder="输入掩码(0-24)"#}
+{#                                   class="form-control" required>#}
+{#                            </div>#}
+{#                            <div class="form-group"><label>网关</label>#}
+{#                            <input type="text" id="gateway" name="gateway" placeholder="输入网关地址"#}
+{#                                   class="form-control">#}
+{#                            </div>#}
+{#                            <div class="form-group"><label>DNS</label>#}
+{#                            <input type="text" id="dns" name="dns" placeholder="输入DNS地址"#}
+{#                                   class="form-control">#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </form>#}
+{#                </div>#}
+{#                <div class="modal-footer">#}
+{#                    <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>#}
+{#                    <button type="button" class="btn btn-primary" id="editinter">保存</button>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{% endblock %}
+
+{% block js %}
+    <!-- Peity -->
+    <script src="/static/js/plugins/peity/jquery.peity.min.js"></script>
+    <script src="/static/js/demo/peity-demo.js"></script>
+
+    <script src="/static/js/plugins/footable/footable.all.min.js"></script>
+
+    <!-- Jquery Validate -->
+    <script src="/static/js/plugins/validate/jquery.validate.min.js"></script>
+    <script src="/static/js/plugins/validate/messages_zh.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.footable').footable();
+            $("#host_form,#email_form,#inter_form").validate();
+            menuActive();
+
+{#            editInter();#}
+            $('#edithost').click(function () {
+                if($("#host_form").valid()) {
+                    var dataParam = $('#host_form').serialize();
+                    dataParam += "&action=systemname";
+                    $.ajax({
+                        url: '/system/systemconfig/',
+                        type: 'POST',
+                        data: dataParam,
+                        dataType: 'JSON',
+                        traditionail: true,
+                        {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+                        success: function (obj) {
+                            if (obj.status) {
+                                location.reload();
+                            } else {
+                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                            }
+                        }
+                    })
+                }
+            });
+{#            $('#editemail').click(function () {#}
+{#                if($("#email_form").valid()) {#}
+{#                    var dataParam = $('#email_form').serialize();#}
+{#                    dataParam += "&edit=email";#}
+{#                    $.ajax({#}
+{#                        url: '/admin-system/',#}
+{#                        type: 'POST',#}
+{#                        data: dataParam,#}
+{#                        dataType: 'JSON',#}
+{#                        traditionail: true,#}
+                        {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+{#                        success: function (obj) {#}
+{#                            if (obj.status) {#}
+{#                                location.reload();#}
+{#                            } else {#}
+{#                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);#}
+{#                            }#}
+{#                        }#}
+{#                    })#}
+{#                }#}
+{#            });#}
+{#            $('#testemail').click(function () {#}
+{#                if($("#email_form").valid()) {#}
+{#                    yuAlert('info', '您好 {{ loginuser.username }}', '正在发送测试邮件');#}
+{#                    var dataParam = $('#email_form').serialize();#}
+{#                    dataParam += "&edit=testemail";#}
+{#                    $.ajax({#}
+{#                        url: '/admin-system/',#}
+{#                        type: 'POST',#}
+{#                        data: dataParam,#}
+{#                        dataType: 'JSON',#}
+{#                        traditionail: true,#}
+                        {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+{#                        success: function (obj) {#}
+{#                            if (obj.status) {#}
+{#                                yuAlert('success', '您好 {{ loginuser.username }}', '测试邮件发送成功');#}
+{#                            } else {#}
+{#                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);#}
+{#                            }#}
+{#                        }#}
+{#                    })#}
+{#                }#}
+{#            });#}
+            $('#reload').click(function () {
+                yuAlert('success', '您好 {{ loginuser.username }}', '正在重启主机');
+                $.ajax({
+                    url: '/system/systemconfig/',
+                    type: 'POST',
+                    data: {'action': 'reload'},
+                    dataType: 'JSON',
+                    traditionail: true,
+                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},
+                    success: function (obj) {
+                        if (obj.status) {
+                            location.reload();
+                        } else {
+                            yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                        }
+                    }
+                })
+            });
+            $('#shutdown').click(function () {
+                yuAlert('success', '您好 {{ loginuser.username }}', '正在关闭主机');
+                $.ajax({
+                    url: '/system/systemconfig/',
+                    type: 'POST',
+                    data: {'action': 'shutdown'},
+                    dataType: 'JSON',
+                    traditionail: true,
+                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},
+                    success: function (obj) {
+                        if (obj.status) {
+                            location.reload();
+                        } else {
+                            yuAlert('error', '您好 {{ loginuser.username }}', obj.error);
+                        }
+                    }
+                })
+            });
+{#            $('#download').click(function () {#}
+{#                yuAlert('success', '您好 {{ loginuser.username }}', '正在下载插件');#}
+{#                var file = $('#download-form #file select').val();#}
+{#                window.open('/getfile?file={0}'.format(file));#}
+{#            });#}
+        });
+
+        function menuActive() {
+            $('#system-menu').addClass('active');
+        }
+{#        function editInter() {#}
+{#            $('.editinter').click(function () {#}
+{#                $('#inter_form #interface').val($(this).attr('inter'));#}
+{#                $('#inter_form #state').val($(this).attr('state'));#}
+{#                $('#inter_form #mode').val($(this).attr('mode'));#}
+{#                $('#inter_form #ip').val($(this).attr('ip'));#}
+{#                $('#inter_form #mask').val($(this).attr('mask'));#}
+{#                $('#inter_form #gateway').val($(this).attr('gateway'));#}
+{#                $('#inter_form #dns').val($(this).attr('dns'));#}
+{#            });#}
+{#            $('#editinter').click(function () {#}
+{#                if($("#inter_form").valid()) {#}
+{#                    yuAlert('info', '您好 {{ loginuser.username }}', '正在配置网络', 8000);#}
+{#                    var dataParam = $('#inter_form').serialize();#}
+{#                    dataParam += "&edit=inter";#}
+{#                    $.ajax({#}
+{#                        url: '/admin-system/',#}
+{#                        type: 'POST',#}
+{#                        data: dataParam,#}
+{#                        dataType: 'JSON',#}
+{#                        traditionail: true,#}
+                        {#                    headers: {'X-CSRFtoken': $.cookie('csrftoken')},#}
+{#                        success: function (obj) {#}
+{#                            if (obj.status) {#}
+{#                                location.reload();#}
+{#                            } else {#}
+{#                                yuAlert('error', '您好 {{ loginuser.username }}', obj.error);#}
+{#                            }#}
+{#                        }#}
+{#                    })#}
+{#                }#}
+{#            });#}
+{#        }#}
+    </script>
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{%  load i18n %}
+
+{% block title %}{{ oem.oemname }}管理系统 | 系统日志{% endblock %}
+
+{% block css %}
+    <link href="/static/css/plugins/footable/footable.core.css" rel="stylesheet">
+{% endblock css %}
+
+{% block content %}
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-sm-4">
+            <h2>系统日志</h2>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/audits/home/">主页</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <strong>系统日志</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="wrapper wrapper-content animated fadeInUp">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>记录的所有系统日志</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row m-b-sm m-t-sm">
+                            <div class="col-md-1">
+                                <button type="button" id="loading-example-btn" class="btn btn-white btn-sm"><i class="fa fa-refresh"></i> 刷新</button>
+                            </div>
+                            <div class="col-md-11">
+                                <div class="input-group"><input type="text" id="filter" placeholder="搜索" class="form-control-sm form-control"> <span
+                                        class="input-group-btn">
+                                        <button type="button" class="btn btn-sm btn-primary"> 搜索</button> </span></div>
+                            </div>
+                        </div>
+
+{#                        <div class="project-list table-responsive">#}
+                        <div class="table-responsive">
+                            <table class="footable table table-stripped" data-page-size="15" data-filter=#filter data-limit-navigation="5">
+                                <thead>
+                                <tr>
+                                    <th>等级</th>
+                                    <th>设备</th>
+                                    <th>IP</th>
+                                    <th>时间</th>
+                                    <th>日志</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in log reversed %}
+                                <tr class="logs">
+                                    <td class="project-status">
+                                        <span class="label yulevel">{{ row.level }}</span>
+                                    </td>
+                                    <td class="project-title">
+{#                                        <a href="/admin-host-{{ row.log_host.host }}/?tab=system">{{ row.log_host.host }}</a>#}
+                                        <span>{{ row.host }}</span>
+                                    </td>
+                                    <td class="project-ip">
+                                        <span>{{ row.ip }}</span>
+                                    </td>
+                                    <td class="project-time">
+                                        <span>{{ row.ctime|date:'Y-m-d H:i:s' }}</span>
+                                    </td>
+                                    <td class="project-log">
+                                        <span>{{ row.log }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td colspan="12">
+                                        <ul class="pagination float-right"></ul>
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="/static/js/plugins/footable/footable.all.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.footable').footable();
+
+            $('#loading-example-btn').click(function () {
+                btn = $(this);
+                simpleLoad(btn, true);
+                location.reload();
+
+                // Ajax example
+//                $.ajax().always(function () {
+//                    simpleLoad($(this), false)
+//                });
+
+                simpleLoad(btn, false)
+            });
+            menuActive();
+            logCss();
+        });
+
+        function simpleLoad(btn, state) {
+            if (state) {
+                btn.children().addClass('fa-spin');
+                btn.contents().last().replaceWith(" Loading");
+            } else {
+                setTimeout(function () {
+                    btn.children().removeClass('fa-spin');
+                    btn.contents().last().replaceWith(" 刷新");
+                }, 2000);
+            }
+        }
+
+        function menuActive() {
+            $('#log-menu, #systemlog-menu').addClass('active');
+            $('#log-menu .nav-second-level').addClass('in').attr('aria-expanded','true');
+        }
+
+        function logCss() {
+            var logs = $('.logs');
+            for (var i = 0; i <'{{ log }}'.length; i++) {
+                loglevel(logs.eq(i));
+            }
+        }
+
+        function loglevel(logs) {
+            var level = logs.find('.yulevel');
+            if (level.text() == 'danger') level.addClass('label-danger');
+            else if (level.text() == 'warning') level.addClass('label-warning');
+            else level.addClass('label-primary');
+        }
+    </script>
+{% endblock %}
